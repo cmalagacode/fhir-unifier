@@ -6,7 +6,7 @@ The following are the goal(s) set out for this project.
    - The network(s) the provider belongs to
    - The locations of where the provider practices
    - The organizations the provider is linked
-2. Allow developers to query the endpoint free of charge. (**TBD may need donations to keep servers up**)
+2. Allow developers to query the endpoint free of charge.
    - If funding to cover server cost isn't available feel free to fork repository and deploy 👍 (You will need to register your app with the companies)
 3. Provide comprehensive documentation to facilitate transparency & use of the REST API.
 
