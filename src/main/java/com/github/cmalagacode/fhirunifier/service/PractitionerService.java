@@ -224,7 +224,8 @@ public class PractitionerService {
                             npiReg,
                             practitioner,
                             organization,
-                            location
+                            location,
+                            target
                     );
                     return ResponseEntity.ok(model);
                 })
