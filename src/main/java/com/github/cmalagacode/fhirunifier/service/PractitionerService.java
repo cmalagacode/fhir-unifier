@@ -15,7 +15,6 @@ import com.github.cmalagacode.fhirunifier.api.model.npiregistry.NPIRegistryRespo
 import com.github.cmalagacode.fhirunifier.api.model.type.HealthPlanOrganizationName;
 import com.github.cmalagacode.fhirunifier.api.model.unified.UnifiedConciseModel;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.http.ResponseEntity;
 
@@ -82,7 +81,6 @@ public class PractitionerService {
                             .map(org -> org.getReference())
                             .flatMap(path -> {
                                 String query = String.format("%s/%s", baseURL, path);
-                                System.out.println(query);
                                 return simpleFetchClient.fetchOrganization(query);
                             })
                             .collectList();
