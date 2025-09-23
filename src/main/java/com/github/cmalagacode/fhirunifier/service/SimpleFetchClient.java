@@ -1,0 +1,53 @@
+package com.github.cmalagacode.fhirunifier.service;
+
+import com.github.cmalagacode.fhirunifier.api.model.fhirlocation.LocationModel;
+import com.github.cmalagacode.fhirunifier.api.model.fhirorganization.OrganizationModel;
+import com.github.cmalagacode.fhirunifier.api.model.fhirpractitioner.PractitionerModel;
+import com.github.cmalagacode.fhirunifier.api.model.fhirpractitionerrole.PractitionerRoleModel;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
+
+
+@Service
+public class SimpleFetchClient {
+
+    private final WebClient client;
+
+    public SimpleFetchClient(WebClient.Builder client) {
+        this.client = client.build();
+    }
+
+    public Mono<PractitionerRoleModel> fetchPractitionerRole(String url) {
+        return client.get()
+                .uri(url)
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .bodyToMono(PractitionerRoleModel.class);
+    }
+
+    public Mono<PractitionerModel> fetchPractitioner(String url) {
+        return client.get()
+                .uri(url)
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .bodyToMono(PractitionerModel.class);
+    }
+
+    public Mono<OrganizationModel> fetchOrganization(String url) {
+        return client.get()
+                .uri(url)
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .bodyToMono(OrganizationModel.class);
+    }
+
+    public Mono<LocationModel> fetchLocation(String url) {
+        return client.get()
+                .uri(url)
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .bodyToMono(LocationModel.class);
+    }
+}

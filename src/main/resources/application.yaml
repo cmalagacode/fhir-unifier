@@ -1,0 +1,16 @@
+support:
+  cigna:
+    baseURL: "https://fhir.cigna.com/ProviderDirectory/v1"
+    practitionerRolePath: "PractitionerRole"
+    practitionerRoleURLParameter: "practitioner.identifier"
+    practitionerRoleURLQueryViaNPI: true
+  united-health-care:
+    baseURL: "https://public.fhir.flex.optum.com/R4"
+    practitionerRolePath: "PractitionerRole"
+    practitionerRoleURLParameter: "practitioner.identifier"
+    practitionerRoleURLQueryViaNPI: true
+  kaiser-permanente:
+    baseURL: "https://kpx-service-bus.kp.org/service/hp/mhpo/healthplanproviderv1rc"
+    practitionerRolePath: "PractitionerRole"
+    practitionerRoleURLParameter: "practitioner.identifier"
+    practitionerRoleURLQueryViaNPI: true
