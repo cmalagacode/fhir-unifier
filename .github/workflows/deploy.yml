@@ -4,7 +4,7 @@ on:
     branches:
       - v0.1.0
 jobs:
-  test:
+  build-image-test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -13,13 +13,21 @@ jobs:
         run: docker build -t app .
       - name: Run Container
         run: docker run -d -p 8080:8080 --name app-test app
+  unit-test:
+    needs: build-image-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v5
+      - name: Make mvnw executable
+        run: chmod +x mvnw
       - name: Run Unit Tests
         run: ./mvnw test
   deploy:
-    needs: test
+    needs: unit-test
     runs-on: ubuntu-latest
     steps:
       - name: Trigger Deployment
-        run:  curl -X POST ${{ secrets.DEPLOY_HOOK }}
+        run: curl -X POST ${{ secrets.DEPLOY_HOOK }}
 
 
