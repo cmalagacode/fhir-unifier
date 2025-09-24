@@ -1,7 +1,9 @@
 package com.github.cmalagacode.fhirunifier.api.model.npiregistry;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class NPIRegistryAddresses {
     @JsonProperty("country_code")
     private String countryCode;

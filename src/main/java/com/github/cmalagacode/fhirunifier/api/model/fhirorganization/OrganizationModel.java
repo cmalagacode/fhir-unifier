@@ -6,6 +6,7 @@ import com.github.cmalagacode.fhirunifier.api.model.fhirtelecom.Telecom;
 
 import java.util.List;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class OrganizationModel {
     private String id;
     private String language;
@@ -17,7 +18,7 @@ public class OrganizationModel {
 
     public OrganizationModel() {}
 
-    @JsonIgnoreProperties(ignoreUnknown = true)
+
     public OrganizationModel(
             String id, String language, String resourceType,
             boolean active, String name,

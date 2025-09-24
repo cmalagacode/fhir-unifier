@@ -1,7 +1,10 @@
 package com.github.cmalagacode.fhirunifier.api.model.fhirtelecom;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.util.Optional;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Telecom {
     private String system;
     private String value;

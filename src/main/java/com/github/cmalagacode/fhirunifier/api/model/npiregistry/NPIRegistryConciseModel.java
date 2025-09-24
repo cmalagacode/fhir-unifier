@@ -1,7 +1,10 @@
 package com.github.cmalagacode.fhirunifier.api.model.npiregistry;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.util.List;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class NPIRegistryConciseModel {
     private final String npiRegistryEnumerationType;
     private final String npiRegistryCredential;

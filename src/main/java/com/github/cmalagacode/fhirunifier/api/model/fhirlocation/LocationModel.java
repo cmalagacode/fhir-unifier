@@ -1,10 +1,12 @@
 package com.github.cmalagacode.fhirunifier.api.model.fhirlocation;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.github.cmalagacode.fhirunifier.api.model.fhiraddress.Address;
 import com.github.cmalagacode.fhirunifier.api.model.fhirtelecom.Telecom;
 
 import java.util.List;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class LocationModel {
     private String id;
     private String language;

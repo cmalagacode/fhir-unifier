@@ -6,6 +6,7 @@ import com.github.cmalagacode.fhirunifier.api.model.fhirtelecom.Telecom;
 
 import java.util.List;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class PractitionerModel {
     private String id;
     private String language;
@@ -17,7 +18,7 @@ public class PractitionerModel {
 
     public PractitionerModel() {}
 
-    @JsonIgnoreProperties(ignoreUnknown = true)
+
     public PractitionerModel(
             String id, String language, boolean active, String gender,
             String birthDate, List<Telecom> telecom, List<Address> address

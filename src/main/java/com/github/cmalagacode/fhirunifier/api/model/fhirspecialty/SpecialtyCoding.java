@@ -1,5 +1,8 @@
 package com.github.cmalagacode.fhirunifier.api.model.fhirspecialty;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class SpecialtyCoding {
     private String system;
     private String code;

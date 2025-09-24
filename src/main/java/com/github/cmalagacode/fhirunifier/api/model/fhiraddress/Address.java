@@ -1,7 +1,11 @@
 package com.github.cmalagacode.fhirunifier.api.model.fhiraddress;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import java.util.List;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Address {
     private List<String> line;
     private String city;

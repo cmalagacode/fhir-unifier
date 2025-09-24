@@ -21,6 +21,7 @@ import reactor.core.publisher.Mono;
 
 import javax.naming.ServiceUnavailableException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -331,6 +332,10 @@ public class PractitionerService {
                     healthCareServiceCorporationConfig
             );
         }
+
+        if (organizations == null) { organizations = Mono.just(Arrays.asList(new OrganizationModel())); }
+        if (locations == null) { locations = Mono.just(Arrays.asList(new LocationModel())); }
+        if (practitioners == null) { practitioners = Mono.just(Arrays.asList(new PractitionerModel())); }
 
         // PHASE 4: Combine Model
         return Mono.zip(npiRegistry, practitioners, organizations, locations)

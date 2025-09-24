@@ -1,5 +1,8 @@
 package com.github.cmalagacode.fhirunifier.api.model.fhirpractitioner;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Practitioner {
     private String reference;
     private String type;

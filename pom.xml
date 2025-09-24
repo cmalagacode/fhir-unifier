@@ -55,7 +55,6 @@
             <version>3.5.5</version>
         </dependency>
     </dependencies>
-
     <build>
         <plugins>
             <plugin>

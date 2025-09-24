@@ -4,13 +4,13 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.util.List;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class NPIRegistryResponse {
     private List<NPIRegistryResult> results;
 
     public NPIRegistryResponse() {}
 
 
-    @JsonIgnoreProperties(ignoreUnknown = true)
     public NPIRegistryResponse(List<NPIRegistryResult> results) {
         this.results = results;
     }

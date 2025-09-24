@@ -1,5 +1,6 @@
 package com.github.cmalagacode.fhirunifier.api.model.unified;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.github.cmalagacode.fhirunifier.api.model.fhirlocation.LocationModel;
 import com.github.cmalagacode.fhirunifier.api.model.fhirorganization.OrganizationModel;
 import com.github.cmalagacode.fhirunifier.api.model.fhirpractitioner.PractitionerModel;
@@ -8,6 +9,7 @@ import com.github.cmalagacode.fhirunifier.api.model.type.HealthPlanOrganizationN
 
 import java.util.List;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class UnifiedConciseModel {
     private final String npi;
     // NPI Registry
@@ -16,7 +18,6 @@ public class UnifiedConciseModel {
     private final List<OrganizationModel> organizationModel;
     private final List<LocationModel> locationModel;
     private final HealthPlanOrganizationName target;
-
 
     public UnifiedConciseModel(
             String npi, NPIRegistryConciseModel npiRegistryConciseModel,

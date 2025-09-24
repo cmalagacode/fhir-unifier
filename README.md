@@ -35,7 +35,6 @@ Think of this like a data unification layer that makes it easier to view the dat
 3. Kaiser Permanente (target=KAISER_PERMANENTE)
 4. Independence Blue Cross (target=INDEPENDENCE_BLUE_CROSS)
 5. Molina Healthcare (target=MOLINA_HEALTHCARE)
-6. Health Care Service Corporation (HCSC) (target=HEALTH_CARE_SERVICE_CORPORATION)
 
 ## 📚 Documentation:
 

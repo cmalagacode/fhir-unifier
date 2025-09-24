@@ -42,8 +42,8 @@ support:
     oauth2: false
     registrationId: "molina-healthcare"
   health-care-service-corporation:
-    baseURL: "https://api.hcsc.net/providerfinder"
-    practitionerRolePath: "sapphire/fhir/PractitionerRole"
+    baseURL: "https://api.hcsc.net/providerfinder/sapphire/fhir"
+    practitionerRolePath: "PractitionerRole"
     practitionerRoleURLParameter: "identifier"
     practitionerRoleURLQueryViaNPI: true
     oauth2: false

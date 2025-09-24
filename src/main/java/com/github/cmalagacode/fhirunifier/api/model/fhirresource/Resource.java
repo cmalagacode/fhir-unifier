@@ -11,6 +11,7 @@ import com.github.cmalagacode.fhirunifier.api.model.fhirtelecom.Telecom;
 
 import java.util.List;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Resource {
     private String resourceType;
     private String id;
@@ -26,7 +27,6 @@ public class Resource {
 
     public Resource() {}
 
-    @JsonIgnoreProperties(ignoreUnknown = true)
     public Resource(
             String resourceType, List<Identifier> identifier, List<Telecom> telecom, List<Location> location, Organization organization,
             Practitioner practitioner, Period period, boolean active, String language, String id, List<Specialty> specialty
