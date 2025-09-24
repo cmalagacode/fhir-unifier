@@ -1,9 +1,6 @@
 package com.github.cmalagacode.fhirunifier.service;
 
-import com.github.cmalagacode.fhirunifier.api.config.CignaConfig;
-import com.github.cmalagacode.fhirunifier.api.config.Config;
-import com.github.cmalagacode.fhirunifier.api.config.KaiserPermanente;
-import com.github.cmalagacode.fhirunifier.api.config.UnitedHealthCareConfig;
+import com.github.cmalagacode.fhirunifier.api.config.*;
 import com.github.cmalagacode.fhirunifier.api.model.fhirlink.Link;
 import com.github.cmalagacode.fhirunifier.api.model.fhirlocation.LocationModel;
 import com.github.cmalagacode.fhirunifier.api.model.fhirorganization.OrganizationModel;
@@ -29,23 +26,34 @@ import java.util.List;
 
 @Service
 public class PractitionerService {
-
     private final NPIRegistryClient npiRegistryService;
     private final SimpleFetchClient simpleFetchClient;
+    private final Oauth2FetchClient oauth2FetchClient;
     private final CignaConfig cignaConfig;
     private final UnitedHealthCareConfig unitedHealthCareConfig;
-    private final KaiserPermanente kaiserPermanente;
+    private final KaiserPermanenteConfig kaiserPermanenteConfig;
+    private final IndependenceBlueCrossConfig independenceBlueCrossConfig;
+    private final MolinaHealthcareConfig molinaHealthcareConfig;
+    private final HealthCareServiceCorporationConfig healthCareServiceCorporationConfig;
 
     public PractitionerService(
             NPIRegistryClient npiRegistryService,
-            SimpleFetchClient simpleFetchClient, CignaConfig cignaConfig, UnitedHealthCareConfig unitedHealthCareConfig,
-            KaiserPermanente kaiserPermanente
+            SimpleFetchClient simpleFetchClient, Oauth2FetchClient oauth2FetchClient,
+            CignaConfig cignaConfig, UnitedHealthCareConfig unitedHealthCareConfig,
+            KaiserPermanenteConfig kaiserPermanenteConfig,
+            IndependenceBlueCrossConfig independenceBlueCrossConfig,
+            MolinaHealthcareConfig molinaHealthcareConfig,
+            HealthCareServiceCorporationConfig healthCareServiceCorporationConfig
     ) {
         this.npiRegistryService = npiRegistryService;
         this.simpleFetchClient = simpleFetchClient;
+        this.oauth2FetchClient = oauth2FetchClient;
         this.cignaConfig = cignaConfig;
         this.unitedHealthCareConfig = unitedHealthCareConfig;
-        this.kaiserPermanente = kaiserPermanente;
+        this.kaiserPermanenteConfig = kaiserPermanenteConfig;
+        this.independenceBlueCrossConfig = independenceBlueCrossConfig;
+        this.molinaHealthcareConfig = molinaHealthcareConfig;
+        this.healthCareServiceCorporationConfig = healthCareServiceCorporationConfig;
     }
 
     private boolean fhirMorePages(List<Link> links) {
@@ -64,12 +72,36 @@ public class PractitionerService {
                 config.getPractitionerRoleURLParameter(),
                 lookupID
         );
+
+        if (config.getOauth2()) {
+            return oauth2FetchClient.fetchPractitionerRole(url, config.getRegistrationId());
+        }
         return simpleFetchClient.fetchPractitionerRole(url);
     }
 
     private Mono<List<OrganizationModel>> getOrganizations(
-            Mono<PractitionerRoleModel> response, String baseURL
+            Mono<PractitionerRoleModel> response, String baseURL,
+            Config config
     ) {
+        if (config.getOauth2()) {
+            return response.flatMap(resp -> {
+                        if (resp.getEntry() == null || resp.getEntry().isEmpty()) {
+                            return Mono.just(new ArrayList<OrganizationModel>());
+                        }
+                        List<Resource> practitionerRoleResponseList = resp.getEntry().stream().map(entry -> entry.getResource()).toList();
+                        // Fetch organizations
+                        Mono<List<OrganizationModel>> organizationsMono = Flux.fromIterable(practitionerRoleResponseList)
+                                .map(Resource::getOrganization)
+                                .map(org -> org.getReference())
+                                .flatMap(path -> {
+                                    String query = String.format("%s/%s", baseURL, path);
+                                    return oauth2FetchClient.fetchOrganization(query, config.getRegistrationId());
+                                })
+                                .collectList();
+                        return organizationsMono;
+                    })
+                    .onErrorMap(err -> new ServiceUnavailableException(err.getMessage()));
+        }
         return response.flatMap(resp -> {
                     if (resp.getEntry() == null || resp.getEntry().isEmpty()) {
                         return Mono.just(new ArrayList<OrganizationModel>());
@@ -90,8 +122,28 @@ public class PractitionerService {
     }
 
     private Mono<List<PractitionerModel>> getPractitioners(
-            Mono<PractitionerRoleModel> response, String baseURL
+            Mono<PractitionerRoleModel> response, String baseURL,
+            Config config
     ) {
+        if (config.getOauth2()) {
+            return response.flatMap(resp -> {
+                        if (resp.getEntry() == null || resp.getEntry().isEmpty()) {
+                            return Mono.just(new ArrayList<PractitionerModel>());
+                        }
+                        List<Resource> practitionerRoleResponseList = resp.getEntry().stream().map(entry -> entry.getResource()).toList();
+                        // Fetch practitioners
+                        Mono<List<PractitionerModel>> practitionersMono = Flux.fromIterable(practitionerRoleResponseList)
+                                .map(Resource::getPractitioner)
+                                .map(prac -> prac.getReference())
+                                .flatMap(path -> {
+                                    String query = String.format("%s/%s", baseURL, path);
+                                    return oauth2FetchClient.fetchPractitioner(query, config.getRegistrationId());
+                                })
+                                .collectList();
+                        return practitionersMono;
+                    })
+                    .onErrorMap(err -> new ServiceUnavailableException(err.getMessage()));
+        }
         return response.flatMap(resp -> {
                     if (resp.getEntry() == null || resp.getEntry().isEmpty()) {
                         return Mono.just(new ArrayList<PractitionerModel>());
@@ -112,8 +164,27 @@ public class PractitionerService {
     }
 
     private Mono<List<LocationModel>> getLocations(
-            Mono<PractitionerRoleModel> response, String baseURL
+            Mono<PractitionerRoleModel> response, String baseURL,
+            Config config
     ) {
+        if (config.getOauth2()) {
+            return response.flatMap(resp -> {
+                        if (resp.getEntry() == null || resp.getEntry().isEmpty()) {
+                            return Mono.just(new ArrayList<LocationModel>());
+                        }
+                        List<Resource> practitionerRoleResponseList = resp.getEntry().stream().map(entry -> entry.getResource()).toList();
+                        // Fetch locations
+                        return Flux.fromIterable(practitionerRoleResponseList)
+                                .flatMap(resource -> Flux.fromIterable(resource.getLocation()))
+                                .flatMap(locationRef -> {
+                                    String path = locationRef.getReference(); // e.g., "Location/123"
+                                    String query = String.format("%s/%s", baseURL, path);
+                                    return oauth2FetchClient.fetchLocation(query,  config.getRegistrationId());
+                                })
+                                .collectList();
+                    })
+                    .onErrorMap(err -> new ServiceUnavailableException(err.getMessage()));
+        }
         return response.flatMap(resp -> {
                     if (resp.getEntry() == null || resp.getEntry().isEmpty()) {
                         return Mono.just(new ArrayList<LocationModel>());
@@ -150,15 +221,18 @@ public class PractitionerService {
 
             practitioners = getPractitioners(
                     practitionerRole,
-                    cignaConfig.getBaseURL()
+                    cignaConfig.getBaseURL(),
+                    cignaConfig
             );
             organizations = getOrganizations(
                     practitionerRole,
-                    cignaConfig.getBaseURL()
+                    cignaConfig.getBaseURL(),
+                    cignaConfig
             );
             locations = getLocations(
                     practitionerRole,
-                    cignaConfig.getBaseURL()
+                    cignaConfig.getBaseURL(),
+                    cignaConfig
             );
 
         } else if (target == HealthPlanOrganizationName.UNITED_HEALTH_CARE) {
@@ -167,31 +241,94 @@ public class PractitionerService {
 
             practitioners = getPractitioners(
                     practitionerRole,
-                    unitedHealthCareConfig.getBaseURL()
+                    unitedHealthCareConfig.getBaseURL(),
+                    unitedHealthCareConfig
             );
             organizations = getOrganizations(
                     practitionerRole,
-                    unitedHealthCareConfig.getBaseURL()
+                    unitedHealthCareConfig.getBaseURL(),
+                    unitedHealthCareConfig
             );
             locations = getLocations(
                     practitionerRole,
-                    unitedHealthCareConfig.getBaseURL()
+                    unitedHealthCareConfig.getBaseURL(),
+                    unitedHealthCareConfig
             );
         } else if (target == HealthPlanOrganizationName.KAISER_PERMANENTE) {
-            practitionerRole = getHealthPlan(npi, kaiserPermanente);
+            practitionerRole = getHealthPlan(npi, kaiserPermanenteConfig);
             // PHASE 3: Get Carrier Data
 
             practitioners = getPractitioners(
                     practitionerRole,
-                    kaiserPermanente.getBaseURL()
+                    kaiserPermanenteConfig.getBaseURL(),
+                    kaiserPermanenteConfig
             );
             organizations = getOrganizations(
                     practitionerRole,
-                    kaiserPermanente.getBaseURL()
+                    kaiserPermanenteConfig.getBaseURL(),
+                    kaiserPermanenteConfig
             );
             locations = getLocations(
                     practitionerRole,
-                    kaiserPermanente.getBaseURL()
+                    kaiserPermanenteConfig.getBaseURL(),
+                    kaiserPermanenteConfig
+            );
+        } else if (target == HealthPlanOrganizationName.INDEPENDENCE_BLUE_CROSS) {
+            practitionerRole = getHealthPlan(npi, independenceBlueCrossConfig);
+            // PHASE 3: Get Carrier Data
+
+            practitioners = getPractitioners(
+                    practitionerRole,
+                    independenceBlueCrossConfig.getBaseURL(),
+                    independenceBlueCrossConfig
+            );
+            organizations = getOrganizations(
+                    practitionerRole,
+                    independenceBlueCrossConfig.getBaseURL(),
+                    independenceBlueCrossConfig
+            );
+            locations = getLocations(
+                    practitionerRole,
+                    independenceBlueCrossConfig.getBaseURL(),
+                    independenceBlueCrossConfig
+            );
+        } else if (target == HealthPlanOrganizationName.MOLINA_HEALTHCARE) {
+            practitionerRole = getHealthPlan(npi, molinaHealthcareConfig);
+            // PHASE 3: Get Carrier Data
+
+            practitioners = getPractitioners(
+                    practitionerRole,
+                    molinaHealthcareConfig.getBaseURL(),
+                    molinaHealthcareConfig
+            );
+            organizations = getOrganizations(
+                    practitionerRole,
+                    molinaHealthcareConfig.getBaseURL(),
+                    molinaHealthcareConfig
+            );
+            locations = getLocations(
+                    practitionerRole,
+                    molinaHealthcareConfig.getBaseURL(),
+                    molinaHealthcareConfig
+            );
+        } else if (target == HealthPlanOrganizationName.HEALTH_CARE_SERVICE_CORPORATION) {
+            practitionerRole = getHealthPlan(npi, healthCareServiceCorporationConfig);
+            // PHASE 3: Get Carrier Data
+
+            practitioners = getPractitioners(
+                    practitionerRole,
+                    healthCareServiceCorporationConfig.getBaseURL(),
+                    healthCareServiceCorporationConfig
+            );
+            organizations = getOrganizations(
+                    practitionerRole,
+                    healthCareServiceCorporationConfig.getBaseURL(),
+                    healthCareServiceCorporationConfig
+            );
+            locations = getLocations(
+                    practitionerRole,
+                    healthCareServiceCorporationConfig.getBaseURL(),
+                    healthCareServiceCorporationConfig
             );
         }
 

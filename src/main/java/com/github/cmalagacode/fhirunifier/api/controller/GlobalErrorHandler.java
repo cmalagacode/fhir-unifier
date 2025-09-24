@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-public class CustomErrorController implements ErrorController {
+public class GlobalErrorHandler implements ErrorController {
 
     @RequestMapping("/error")
     public ResponseEntity<Map<String, String>> handleError() {

@@ -7,50 +7,57 @@ import com.github.cmalagacode.fhirunifier.api.model.fhirpractitionerrole.Practit
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
 
+import org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-
 @Service
-public class SimpleFetchClient {
-
+public class Oauth2FetchClient {
     private final WebClient client;
 
-    public SimpleFetchClient(@Qualifier("simpleWebClient") WebClient simpleWebClient) {
-        this.client = simpleWebClient;
+    public Oauth2FetchClient(@Qualifier("oauth2WebClient") WebClient oauth2WebClient) {
+        this.client = oauth2WebClient;
     }
 
-    public Mono<PractitionerRoleModel> fetchPractitionerRole(String url) {
+    public Mono<PractitionerRoleModel> fetchPractitionerRole(String url, String registrationId) {
         return client.get()
                 .uri(url)
+                .attributes(ServletOAuth2AuthorizedClientExchangeFilterFunction
+                        .clientRegistrationId(registrationId)) // e.g. "aetna"
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .bodyToMono(PractitionerRoleModel.class)
                 .onErrorResume(e -> Mono.just(new PractitionerRoleModel()));
     }
 
-    public Mono<PractitionerModel> fetchPractitioner(String url) {
+    public Mono<PractitionerModel> fetchPractitioner(String url, String registrationId) {
         return client.get()
                 .uri(url)
+                .attributes(ServletOAuth2AuthorizedClientExchangeFilterFunction
+                        .clientRegistrationId(registrationId)) // e.g. "aetna"
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .bodyToMono(PractitionerModel.class)
                 .onErrorResume(e -> Mono.just(new PractitionerModel()));
     }
 
-    public Mono<OrganizationModel> fetchOrganization(String url) {
+    public Mono<OrganizationModel> fetchOrganization(String url, String registrationId) {
         return client.get()
                 .uri(url)
+                .attributes(ServletOAuth2AuthorizedClientExchangeFilterFunction
+                        .clientRegistrationId(registrationId)) // e.g. "aetna"
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .bodyToMono(OrganizationModel.class)
                 .onErrorResume(e -> Mono.just(new OrganizationModel()));
     }
 
-    public Mono<LocationModel> fetchLocation(String url) {
+    public Mono<LocationModel> fetchLocation(String url, String registrationId) {
         return client.get()
                 .uri(url)
+                .attributes(ServletOAuth2AuthorizedClientExchangeFilterFunction
+                        .clientRegistrationId(registrationId)) // e.g. "aetna"
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .bodyToMono(LocationModel.class)

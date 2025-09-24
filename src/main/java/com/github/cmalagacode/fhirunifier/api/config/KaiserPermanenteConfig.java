@@ -5,8 +5,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@ConfigurationProperties(prefix = "support.united-health-care")
-public class UnitedHealthCareConfig implements Config {
+@ConfigurationProperties(prefix = "support.kaiser-permanente")
+public class KaiserPermanenteConfig implements Config {
     private String baseURL;
     private String practitionerRolePath;
     private boolean practitionerRoleURLQueryViaNPI;

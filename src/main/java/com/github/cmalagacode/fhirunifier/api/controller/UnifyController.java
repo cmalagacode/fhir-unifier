@@ -17,7 +17,9 @@ public class UnifyController {
     private final PractitionerService practitionerService;
 
     @Autowired
-    public UnifyController(PractitionerService practitionerService) {
+    public UnifyController(
+            PractitionerService practitionerService
+    ) {
         this.practitionerService = practitionerService;
     }
 

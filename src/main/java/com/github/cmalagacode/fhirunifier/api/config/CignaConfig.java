@@ -10,6 +10,8 @@ public class CignaConfig implements Config {
     private String practitionerRolePath;
     private boolean practitionerRoleURLQueryViaNPI;
     private String practitionerRoleURLParameter;
+    private boolean oauth2;
+    private String registrationId;
 
     public String getBaseURL() {
         return baseURL;
@@ -41,5 +43,21 @@ public class CignaConfig implements Config {
 
     public void setPractitionerRoleURLParameter(String practitionerRoleURLParameter) {
         this.practitionerRoleURLParameter = practitionerRoleURLParameter;
+    }
+
+    public boolean getOauth2() {
+        return oauth2;
+    }
+
+    public void setOauth2(boolean oauth2) {
+        this.oauth2 = oauth2;
+    }
+
+    public String getRegistrationId() {
+        return registrationId;
+    }
+
+    public void setRegistrationId(String registrationId) {
+        this.registrationId = registrationId;
     }
 }

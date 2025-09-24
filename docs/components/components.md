@@ -2,7 +2,7 @@
 
 **Not ordered by company size**
 
-1. United Health Care
+1. United Health Care*
     1. Base URL → https://public.fhir.flex.optum.com/R4/
         1. No authentication needed since public
         2. Both Optum and UnitedHealthcare are subsidiaries of UnitedHealth Group (UHG)
@@ -43,35 +43,26 @@
     2. https://developerportal.aetna.com/fhirapis
     3. https://developerportal.aetna.com/gettingstarted
         1. According to Aetna documentation, you need to register and use OAuth 2.0 authentication to access provider directory api, even though it contains public provider data.
-4. Cigna
+4. Cigna*
     1. Base URL → https://fhir.cigna.com/ProviderDirectory/v1/
     2. https://developer.cigna.com/docs/service-apis/provider-directory/docs
         1. According to Cigna documentation, you do not need to register and authenticate since it is public.
-5. Humana*
-    1. Base URL → https://fhir.humana.com/api/
-    2. https://developers.humana.com/apis/registerapp
-    3. https://developers.humana.com/apis/provider-directory-api/doc
-        1. According to Humana documentation, you need to register and use OAuth 2.0 authentication to access provider directory api, even though it contains public provider data.
-6. Kaiser Permanente
+5. Kaiser Permanente*
     1. Base URL → https://kpx-service-bus.kp.org/service/hp/mhpo/healthplanproviderv1rc
     2. https://developer.kp.org/#/apis/60c008510278dd00123cef6e
         1. According to Kaiser Permanente documentation, you do not need to register and authenticate.
-7. Health Care Service Corporation (HCSC)
+6. Health Care Service Corporation (HCSC)*
     1. Base URL → https://api.hcsc.net
     2. https://interoperability.hcsc.com/s/provider-directory-api
         1. According to Health Care Service Corporation documentation, you do not need to register and authenticate.
-8. Molina Healthcare
+7. Molina Healthcare*
     1. Base URL → https://api.interop.molinahealthcare.com/providerdirectory/
     2. https://developer.interop.molinahealthcare.com/api-details#api=trizetto-provider-directory&operation=607f68d222af8c23888bf60f
         1. According to Molina Healthcare documentation, you do not need to register and authenticate.
-9. Blue Cross Blue Shield California
-    1. Base URL → Sign Up To Get
-    2. https://devportal-dev.blueshieldca.com/bsc/fhir-sandbox/product/987
-    3. https://devportal-dev.blueshieldca.com/bsc/fhir-sandbox/
-        1. According to Blue Cross Blue Shield California documentation, you need to register and use OAuth 2.0 authentication to access provider directory api, even though it contains public provider data.
-10. Independence Blue Cross
-    1. https://www.ibx.com/developer-resources
-        1. According to Independence Blue Cross, you need to register and use OAuth 2.0 authentication to access provider directory api, even though it contains public provider data.
+8. Independence Blue Cross*
+   1. Base URL -> https://eapics.ibx.com/provider/v1/fhir
+   2. https://www.ibx.com/developer-resources
+       1. According to Independence Blue Cross, you do not need to register and authenticate.
 
 ## NPI Registry API
 

@@ -4,13 +4,63 @@ support:
     practitionerRolePath: "PractitionerRole"
     practitionerRoleURLParameter: "practitioner.identifier"
     practitionerRoleURLQueryViaNPI: true
+    oauth2: false
+    registrationId: "cigna"
   united-health-care:
     baseURL: "https://public.fhir.flex.optum.com/R4"
     practitionerRolePath: "PractitionerRole"
     practitionerRoleURLParameter: "practitioner.identifier"
     practitionerRoleURLQueryViaNPI: true
+    oauth2: false
+    registrationId: "united-health-care"
   kaiser-permanente:
     baseURL: "https://kpx-service-bus.kp.org/service/hp/mhpo/healthplanproviderv1rc"
     practitionerRolePath: "PractitionerRole"
     practitionerRoleURLParameter: "practitioner.identifier"
     practitionerRoleURLQueryViaNPI: true
+    oauth2: false
+    registrationId: "kaiser-permanente"
+  aetna:
+    baseURL: "https://apif1.aetna.com/fhir/v1"
+    practitionerRolePath: "PractitionerRole"
+    practitionerRoleURLParameter: "Identifier"
+    practitionerRoleURLQueryViaNPI: true
+    oauth2: true
+    registrationId: "aetna"
+  independence-blue-cross:
+    baseURL: "https://eapics.ibx.com/provider/v1/fhir"
+    practitionerRolePath: "PractitionerRole"
+    practitionerRoleURLParameter: "practitioner.identifier"
+    practitionerRoleURLQueryViaNPI: true
+    oauth2: false
+    registrationId: "independence-blue-cross"
+  molina-healthcare:
+    baseURL: "https://api.interop.molinahealthcare.com/providerdirectory"
+    practitionerRolePath: "PractitionerRole"
+    practitionerRoleURLParameter: "practitioner.identifier"
+    practitionerRoleURLQueryViaNPI: true
+    oauth2: false
+    registrationId: "molina-healthcare"
+  health-care-service-corporation:
+    baseURL: "https://api.hcsc.net/providerfinder"
+    practitionerRolePath: "sapphire/fhir/PractitionerRole"
+    practitionerRoleURLParameter: "identifier"
+    practitionerRoleURLQueryViaNPI: true
+    oauth2: false
+    registrationId: "health-care-service-corporation"
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          aetna:
+            client-id: ${AETNA_CLIENT_ID}
+            client-secret: ${AETNA_CLIENT_SECRET}
+            authorization-grant-type: client_credentials
+            scope:
+              - Public
+              - NonPII
+        provider:
+          aetna:
+            token-uri: "https://apif1.aetna.com/fhir/v1/fhirserver_auth/oauth2/token"
+
