@@ -1,0 +1,25 @@
+name: deploy.yml
+on:
+  push:
+    branches:
+      - v0.1.0
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v5
+      - name: Build Image
+        run: docker build -t app .
+      - name: Run Container
+        run: docker run -d -p 8080:8080 --name app-test app
+      - name: Run Unit Tests
+        run: ./mvnw test
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Deployment
+        run:  curl -X POST ${{ secrets.DEPLOY_HOOK }}
+
+
