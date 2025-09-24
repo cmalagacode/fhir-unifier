@@ -19,7 +19,7 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v5
-      - name: Set up JDK 21
+      - name: Set up JDK 21 Corretto
         uses: actions/setup-java@v3
         with:
           distribution: 'corretto'
