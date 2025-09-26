@@ -36,6 +36,7 @@ public class PractitionerService {
     private final IndependenceBlueCrossConfig independenceBlueCrossConfig;
     private final MolinaHealthcareConfig molinaHealthcareConfig;
     private final HealthCareServiceCorporationConfig healthCareServiceCorporationConfig;
+    private final ElevanceHealthConfig elevanceHealthConfig;
 
     public PractitionerService(
             NPIRegistryClient npiRegistryService,
@@ -44,7 +45,8 @@ public class PractitionerService {
             KaiserPermanenteConfig kaiserPermanenteConfig,
             IndependenceBlueCrossConfig independenceBlueCrossConfig,
             MolinaHealthcareConfig molinaHealthcareConfig,
-            HealthCareServiceCorporationConfig healthCareServiceCorporationConfig
+            HealthCareServiceCorporationConfig healthCareServiceCorporationConfig,
+            ElevanceHealthConfig elevanceHealthConfig
     ) {
         this.npiRegistryService = npiRegistryService;
         this.simpleFetchClient = simpleFetchClient;
@@ -55,6 +57,7 @@ public class PractitionerService {
         this.independenceBlueCrossConfig = independenceBlueCrossConfig;
         this.molinaHealthcareConfig = molinaHealthcareConfig;
         this.healthCareServiceCorporationConfig = healthCareServiceCorporationConfig;
+        this.elevanceHealthConfig = elevanceHealthConfig;
     }
 
     private boolean fhirMorePages(List<Link> links) {
@@ -128,6 +131,7 @@ public class PractitionerService {
     ) {
         if (config.getOauth2()) {
             return response.flatMap(resp -> {
+                        System.out.println(resp);
                         if (resp.getEntry() == null || resp.getEntry().isEmpty()) {
                             return Mono.just(new ArrayList<PractitionerModel>());
                         }
@@ -331,6 +335,25 @@ public class PractitionerService {
                     healthCareServiceCorporationConfig.getBaseURL(),
                     healthCareServiceCorporationConfig
             );
+        } else if (target == HealthPlanOrganizationName.ELEVANCE_HEALTH) {
+            practitionerRole = getHealthPlan(npi, elevanceHealthConfig);
+            // PHASE 3: Get Carrier Data
+
+            practitioners = getPractitioners(
+                    practitionerRole,
+                    elevanceHealthConfig.getBaseURL(),
+                    elevanceHealthConfig
+            );
+            organizations = getOrganizations(
+                    practitionerRole,
+                    elevanceHealthConfig.getBaseURL(),
+                    elevanceHealthConfig
+            );
+            locations = getLocations(
+                    practitionerRole,
+                    elevanceHealthConfig.getBaseURL(),
+                    elevanceHealthConfig
+            );
         }
 
         if (organizations == null) { organizations = Mono.just(Arrays.asList(new OrganizationModel())); }
@@ -341,6 +364,9 @@ public class PractitionerService {
         return Mono.zip(npiRegistry, practitioners, organizations, locations)
                 .map(tupleData -> {
                     NPIRegistryResponse npiRegistryResponse = tupleData.getT1();
+                    if (npiRegistryResponse.getResults().size() == 0) { 
+                        return ResponseEntity.ok(new UnifiedConciseModel(target)); 
+                    }
                     List<PractitionerModel> practitioner = tupleData.getT2();
                     List<OrganizationModel> organization = tupleData.getT3();
                     List<LocationModel> location = tupleData.getT4();

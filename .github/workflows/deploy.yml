@@ -1,8 +1,7 @@
 name: deploy.yml
 on:
   push:
-    branches:
-      - v0.1.0
+    tags: v*
 jobs:
   build-image-test:
     runs-on: ubuntu-latest

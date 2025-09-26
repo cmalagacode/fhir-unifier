@@ -6,6 +6,7 @@ import com.github.cmalagacode.fhirunifier.api.model.fhirorganization.Organizatio
 import com.github.cmalagacode.fhirunifier.api.model.fhirpractitioner.PractitionerModel;
 import com.github.cmalagacode.fhirunifier.api.model.npiregistry.NPIRegistryConciseModel;
 import com.github.cmalagacode.fhirunifier.api.model.type.HealthPlanOrganizationName;
+import java.util.Arrays;
 
 import java.util.List;
 
@@ -18,6 +19,15 @@ public class UnifiedConciseModel {
     private final List<OrganizationModel> organizationModel;
     private final List<LocationModel> locationModel;
     private final HealthPlanOrganizationName target;
+
+    public UnifiedConciseModel(HealthPlanOrganizationName target) {
+        this.npi = "None";
+        this.npiRegistryConciseModel = new NPIRegistryConciseModel();
+        this.practitionerModel = Arrays.asList();
+        this.organizationModel = Arrays.asList();
+        this.locationModel = Arrays.asList();
+        this.target = target;
+    }
 
     public UnifiedConciseModel(
             String npi, NPIRegistryConciseModel npiRegistryConciseModel,

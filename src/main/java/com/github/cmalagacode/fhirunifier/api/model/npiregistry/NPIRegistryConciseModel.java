@@ -3,6 +3,7 @@ package com.github.cmalagacode.fhirunifier.api.model.npiregistry;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.util.List;
+import java.util.Arrays;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class NPIRegistryConciseModel {
@@ -19,6 +20,22 @@ public class NPIRegistryConciseModel {
     private final String npiRegistryCertificationDate;
     private final List<NPIRegistryTaxonomies> npiRegistryTaxonomies;
     private final List<NPIRegistryAddresses> npiRegistryAddresses;
+
+    public NPIRegistryConciseModel() {
+        this.npiRegistryEnumerationType = "None";
+        this.npiRegistryCredential = "None";
+        this.npiRegistrySex = "None";
+        this.npiRegistryStatus = "None";
+        this.npiRegistryFirstName = "None";
+        this.npiRegistryLastName = "None";
+        this.npiRegistryMiddleName = "None";
+        this.npiRegistrySoleProprietor = "None";
+        this.npiRegistryEnumerationDate = "None";
+        this.npiRegistryLastUpdated = "None";
+        this.npiRegistryCertificationDate = "None";
+        this.npiRegistryTaxonomies = Arrays.asList();
+        this.npiRegistryAddresses = Arrays.asList();
+    }
 
     public NPIRegistryConciseModel(String npiRegistryEnumerationType, String npiRegistryCredential, String npiRegistrySex, String npiRegistryStatus, String npiRegistryFirstName, String npiRegistryLastName, String npiRegistryMiddleName, String npiRegistrySoleProprietor, String npiRegistryEnumerationDate, String npiRegistryLastUpdated, String npiRegistryCertificationDate, List<NPIRegistryTaxonomies> npiRegistryTaxonomies, List<NPIRegistryAddresses> npiRegistryAddresses) {
         this.npiRegistryEnumerationType = npiRegistryEnumerationType;

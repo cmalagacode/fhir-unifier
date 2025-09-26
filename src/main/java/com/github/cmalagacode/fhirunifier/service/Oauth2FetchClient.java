@@ -23,8 +23,7 @@ public class Oauth2FetchClient {
     public Mono<PractitionerRoleModel> fetchPractitionerRole(String url, String registrationId) {
         return client.get()
                 .uri(url)
-                .attributes(ServletOAuth2AuthorizedClientExchangeFilterFunction
-                        .clientRegistrationId(registrationId)) // e.g. "aetna"
+                .attributes(ServletOAuth2AuthorizedClientExchangeFilterFunction.clientRegistrationId(registrationId))
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .bodyToMono(PractitionerRoleModel.class)
@@ -35,7 +34,7 @@ public class Oauth2FetchClient {
         return client.get()
                 .uri(url)
                 .attributes(ServletOAuth2AuthorizedClientExchangeFilterFunction
-                        .clientRegistrationId(registrationId)) // e.g. "aetna"
+                        .clientRegistrationId(registrationId))
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .bodyToMono(PractitionerModel.class)
@@ -46,7 +45,7 @@ public class Oauth2FetchClient {
         return client.get()
                 .uri(url)
                 .attributes(ServletOAuth2AuthorizedClientExchangeFilterFunction
-                        .clientRegistrationId(registrationId)) // e.g. "aetna"
+                        .clientRegistrationId(registrationId))
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .bodyToMono(OrganizationModel.class)
@@ -57,7 +56,7 @@ public class Oauth2FetchClient {
         return client.get()
                 .uri(url)
                 .attributes(ServletOAuth2AuthorizedClientExchangeFilterFunction
-                        .clientRegistrationId(registrationId)) // e.g. "aetna"
+                        .clientRegistrationId(registrationId))
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .bodyToMono(LocationModel.class)

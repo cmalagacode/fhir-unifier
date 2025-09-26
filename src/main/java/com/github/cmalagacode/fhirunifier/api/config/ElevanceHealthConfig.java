@@ -4,8 +4,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@ConfigurationProperties(prefix = "support.aetna")
-public class AetnaConfig implements Config {
+@ConfigurationProperties(prefix = "support.elevance-health")
+public class ElevanceHealthConfig implements Config {
     private String baseURL;
     private String practitionerRolePath;
     private boolean practitionerRoleURLQueryViaNPI;
