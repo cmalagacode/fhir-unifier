@@ -1,0 +1,51 @@
+name: deploy.yml
+on:
+  push:
+    tags: v*
+jobs:
+  build-image-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v5
+      - name: Build Image
+        run: docker build -t app .
+      - name: Run Container
+        run: docker run -d -p 8080:8080 --name app-test app
+      - name: Stop and Remove Container
+        run: docker stop app-test && docker rm app-test
+  unit-test:
+    needs: build-image-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v5
+      - name: Set up JDK 21 Corretto
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'corretto'
+          java-version: '21'
+      - name: Make mvnw executable
+        run: chmod +x mvnw
+      - name: Run Unit Tests
+        run: ./mvnw test
+  deploy:
+    needs: unit-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Deployment
+        run: curl -X POST ${{ secrets.DEPLOY_HOOK }}
+  release:
+    needs: [ build-image-test, unit-test, deploy ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+

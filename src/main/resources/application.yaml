@@ -1,0 +1,66 @@
+support:
+  cigna:
+    baseURL: "https://fhir.cigna.com/ProviderDirectory/v1"
+    practitionerRolePath: "PractitionerRole"
+    practitionerRoleURLParameter: "practitioner.identifier"
+    practitionerRoleURLQueryViaNPI: true
+    oauth2: false
+    registrationId: "cigna"
+  united-health-care:
+    baseURL: "https://public.fhir.flex.optum.com/R4"
+    practitionerRolePath: "PractitionerRole"
+    practitionerRoleURLParameter: "practitioner.identifier"
+    practitionerRoleURLQueryViaNPI: true
+    oauth2: false
+    registrationId: "united-health-care"
+  kaiser-permanente:
+    baseURL: "https://kpx-service-bus.kp.org/service/hp/mhpo/healthplanproviderv1rc"
+    practitionerRolePath: "PractitionerRole"
+    practitionerRoleURLParameter: "practitioner.identifier"
+    practitionerRoleURLQueryViaNPI: true
+    oauth2: false
+    registrationId: "kaiser-permanente"
+  independence-blue-cross:
+    baseURL: "https://eapics.ibx.com/provider/v1/fhir"
+    practitionerRolePath: "PractitionerRole"
+    practitionerRoleURLParameter: "practitioner.identifier"
+    practitionerRoleURLQueryViaNPI: true
+    oauth2: false
+    registrationId: "independence-blue-cross"
+  molina-healthcare:
+    baseURL: "https://api.interop.molinahealthcare.com/providerdirectory"
+    practitionerRolePath: "PractitionerRole"
+    practitionerRoleURLParameter: "practitioner.identifier"
+    practitionerRoleURLQueryViaNPI: true
+    oauth2: false
+    registrationId: "molina-healthcare"
+  health-care-service-corporation:
+    baseURL: "https://api.hcsc.net/providerfinder/sapphire/fhir"
+    practitionerRolePath: "PractitionerRole"
+    practitionerRoleURLParameter: "identifier"
+    practitionerRoleURLQueryViaNPI: true
+    oauth2: false
+    registrationId: "health-care-service-corporation"
+  elevance-health:
+    baseURL: "https://totalview.healthos.elevancehealth.com/resources/unregistered/api/v1/fhir/cms_mandate/mcd"
+    practitionerRolePath: "PractitionerRole"
+    practitionerRoleURLParameter: "practitioner.identifier"
+    practitionerRoleURLQueryViaNPI: true
+    oauth2: false
+    registrationId: "elevance-health"
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          elevance-health:
+            client-id: ${ELEVANCE_HEALTH_CLIENT_ID}
+            client-secret: ${ELEVANCE_HEALTH_CLIENT_SECRET}
+            authorization-grant-type: client_credentials
+            scope:
+              - Public
+              - NonPII
+        provider:
+          elevance-health:
+            token-uri: "https://totalview.healthos.elevancehealth.com/client.oauth2/unregistered/api/v1/token"
+
