@@ -20,8 +20,6 @@ Using your own namespace ensures that:
 - Maven Central or other repositories won’t reject your artifacts due to duplicate coordinates.
 
 
-
-
 ## 📖 Summary:
 Open source project aimed at harmonizing provider data across multiple insurers and the NPI registry. <br>
 While this project ingests FHIR-based data, it transforms it into a simplified internal model for ease of use and performance.<br>
@@ -36,6 +34,7 @@ Think of this like a data unification layer that makes it easier to view the dat
 4. Independence Blue Cross (target=INDEPENDENCE_BLUE_CROSS)
 5. Molina Healthcare (target=MOLINA_HEALTHCARE)
 6. Health Care Service Corporation (target=HEALTH_CARE_SERVICE_CORPORATION)
+7. Elevance Health (target=ELEVANCE_HEALTH)
 
 ## 📚 Documentation:
 

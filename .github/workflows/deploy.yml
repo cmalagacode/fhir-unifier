@@ -12,6 +12,8 @@ jobs:
         run: docker build -t app .
       - name: Run Container
         run: docker run -d -p 8080:8080 --name app-test app
+      - name: Stop and Remove Container
+        run: docker stop app-test && docker rm app-test
   unit-test:
     needs: build-image-test
     runs-on: ubuntu-latest
@@ -33,5 +35,17 @@ jobs:
     steps:
       - name: Trigger Deployment
         run: curl -X POST ${{ secrets.DEPLOY_HOOK }}
+  release:
+    needs: [ build-image-test, unit-test, deploy ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 

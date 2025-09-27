@@ -38,28 +38,23 @@
     2. https://www.anthem.com/content/dam/digital/developers-portal/Anthem-IOProviderDirectoryAndFormulary-API-Documentation.pdf
     3. https://www.anthem.com/developers
         1. “To establish connections, third party applications (TPA) need to complete the Registration process. This involves filling out the Provider Directory API Production Environment request form, available on the Developer Portal. Once the registration is successfully completed, TPA will receive the client credentials and the access token URL through a secure email.”
-3. Aetna*
-    1. Base URL → Sign Up To Get
-    2. https://developerportal.aetna.com/fhirapis
-    3. https://developerportal.aetna.com/gettingstarted
-        1. According to Aetna documentation, you need to register and use OAuth 2.0 authentication to access provider directory api, even though it contains public provider data.
-4. Cigna*
+3. Cigna*
     1. Base URL → https://fhir.cigna.com/ProviderDirectory/v1/
     2. https://developer.cigna.com/docs/service-apis/provider-directory/docs
         1. According to Cigna documentation, you do not need to register and authenticate since it is public.
-5. Kaiser Permanente*
+4. Kaiser Permanente*
     1. Base URL → https://kpx-service-bus.kp.org/service/hp/mhpo/healthplanproviderv1rc
     2. https://developer.kp.org/#/apis/60c008510278dd00123cef6e
         1. According to Kaiser Permanente documentation, you do not need to register and authenticate.
-6. Health Care Service Corporation (HCSC)*
+5. Health Care Service Corporation (HCSC)*
     1. Base URL → https://api.hcsc.net
     2. https://interoperability.hcsc.com/s/provider-directory-api
         1. According to Health Care Service Corporation documentation, you do not need to register and authenticate.
-7. Molina Healthcare*
+6. Molina Healthcare*
     1. Base URL → https://api.interop.molinahealthcare.com/providerdirectory/
     2. https://developer.interop.molinahealthcare.com/api-details#api=trizetto-provider-directory&operation=607f68d222af8c23888bf60f
         1. According to Molina Healthcare documentation, you do not need to register and authenticate.
-8. Independence Blue Cross*
+7. Independence Blue Cross*
    1. Base URL -> https://eapics.ibx.com/provider/v1/fhir
    2. https://www.ibx.com/developer-resources
        1. According to Independence Blue Cross, you do not need to register and authenticate.
