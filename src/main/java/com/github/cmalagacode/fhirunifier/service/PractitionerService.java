@@ -12,6 +12,8 @@ import com.github.cmalagacode.fhirunifier.api.model.npiregistry.NPIRegistryRespo
 import com.github.cmalagacode.fhirunifier.api.model.type.HealthPlanOrganizationName;
 import com.github.cmalagacode.fhirunifier.api.model.unified.UnifiedConciseModel;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.http.ResponseEntity;
 
@@ -19,14 +21,13 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 
-import javax.naming.ServiceUnavailableException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 
 @Service
 public class PractitionerService {
+    private static final Logger log = LoggerFactory.getLogger(PractitionerService.class);
     private final NPIRegistryClient npiRegistryService;
     private final SimpleFetchClient simpleFetchClient;
     private final Oauth2FetchClient oauth2FetchClient;
@@ -89,13 +90,14 @@ public class PractitionerService {
     ) {
         if (config.getOauth2()) {
             return response.flatMap(resp -> {
-                        if (resp.getEntry() == null || resp.getEntry().isEmpty()) {
+                        if (resp == null || resp.getEntry() == null || resp.getEntry().isEmpty()) {
                             return Mono.just(new ArrayList<OrganizationModel>());
                         }
                         List<Resource> practitionerRoleResponseList = resp.getEntry().stream().map(entry -> entry.getResource()).toList();
                         // Fetch organizations
                         Mono<List<OrganizationModel>> organizationsMono = Flux.fromIterable(practitionerRoleResponseList)
                                 .map(Resource::getOrganization)
+                                .filter(org -> org != null && org.getReference() != null)
                                 .map(org -> org.getReference())
                                 .flatMap(path -> {
                                     String query = String.format("%s/%s", baseURL, path);
@@ -104,16 +106,17 @@ public class PractitionerService {
                                 .collectList();
                         return organizationsMono;
                     })
-                    .onErrorMap(err -> new ServiceUnavailableException(err.getMessage()));
+                    .onErrorReturn(new ArrayList<OrganizationModel>());
         }
         return response.flatMap(resp -> {
-                    if (resp.getEntry() == null || resp.getEntry().isEmpty()) {
+                    if (resp == null || resp.getEntry() == null || resp.getEntry().isEmpty()) {
                         return Mono.just(new ArrayList<OrganizationModel>());
                     }
                     List<Resource> practitionerRoleResponseList = resp.getEntry().stream().map(entry -> entry.getResource()).toList();
                     // Fetch organizations
                     Mono<List<OrganizationModel>> organizationsMono = Flux.fromIterable(practitionerRoleResponseList)
                             .map(Resource::getOrganization)
+                            .filter(org -> org != null && org.getReference() != null)
                             .map(org -> org.getReference())
                             .flatMap(path -> {
                                 String query = String.format("%s/%s", baseURL, path);
@@ -122,7 +125,7 @@ public class PractitionerService {
                             .collectList();
                     return organizationsMono;
                 })
-                .onErrorMap(err -> new ServiceUnavailableException(err.getMessage()));
+                .onErrorReturn(new ArrayList<OrganizationModel>());
     }
 
     private Mono<List<PractitionerModel>> getPractitioners(
@@ -131,14 +134,14 @@ public class PractitionerService {
     ) {
         if (config.getOauth2()) {
             return response.flatMap(resp -> {
-                        System.out.println(resp);
-                        if (resp.getEntry() == null || resp.getEntry().isEmpty()) {
+                        if (resp == null || resp.getEntry() == null || resp.getEntry().isEmpty()) {
                             return Mono.just(new ArrayList<PractitionerModel>());
                         }
                         List<Resource> practitionerRoleResponseList = resp.getEntry().stream().map(entry -> entry.getResource()).toList();
                         // Fetch practitioners
                         Mono<List<PractitionerModel>> practitionersMono = Flux.fromIterable(practitionerRoleResponseList)
                                 .map(Resource::getPractitioner)
+                                .filter(practitioner -> practitioner != null && practitioner.getReference() != null)
                                 .map(prac -> prac.getReference())
                                 .flatMap(path -> {
                                     String query = String.format("%s/%s", baseURL, path);
@@ -147,16 +150,17 @@ public class PractitionerService {
                                 .collectList();
                         return practitionersMono;
                     })
-                    .onErrorMap(err -> new ServiceUnavailableException(err.getMessage()));
+                    .onErrorReturn(new ArrayList<PractitionerModel>());
         }
         return response.flatMap(resp -> {
-                    if (resp.getEntry() == null || resp.getEntry().isEmpty()) {
+                    if (resp == null || resp.getEntry() == null || resp.getEntry().isEmpty()) {
                         return Mono.just(new ArrayList<PractitionerModel>());
                     }
                     List<Resource> practitionerRoleResponseList = resp.getEntry().stream().map(entry -> entry.getResource()).toList();
                     // Fetch practitioners
                     Mono<List<PractitionerModel>> practitionersMono = Flux.fromIterable(practitionerRoleResponseList)
                             .map(Resource::getPractitioner)
+                            .filter(practitioner -> practitioner != null && practitioner.getReference() != null)
                             .map(prac -> prac.getReference())
                             .flatMap(path -> {
                                 String query = String.format("%s/%s", baseURL, path);
@@ -165,7 +169,7 @@ public class PractitionerService {
                             .collectList();
                     return practitionersMono;
                 })
-                .onErrorMap(err -> new ServiceUnavailableException(err.getMessage()));
+                .onErrorReturn(new ArrayList<PractitionerModel>());
     }
 
     private Mono<List<LocationModel>> getLocations(
@@ -174,13 +178,14 @@ public class PractitionerService {
     ) {
         if (config.getOauth2()) {
             return response.flatMap(resp -> {
-                        if (resp.getEntry() == null || resp.getEntry().isEmpty()) {
+                        if (resp == null || resp.getEntry() == null || resp.getEntry().isEmpty()) {
                             return Mono.just(new ArrayList<LocationModel>());
                         }
                         List<Resource> practitionerRoleResponseList = resp.getEntry().stream().map(entry -> entry.getResource()).toList();
                         // Fetch locations
                         return Flux.fromIterable(practitionerRoleResponseList)
                                 .flatMap(resource -> Flux.fromIterable(resource.getLocation()))
+                                .filter(location -> location != null && location.getReference() != null)
                                 .flatMap(locationRef -> {
                                     String path = locationRef.getReference(); // e.g., "Location/123"
                                     String query = String.format("%s/%s", baseURL, path);
@@ -188,16 +193,17 @@ public class PractitionerService {
                                 })
                                 .collectList();
                     })
-                    .onErrorMap(err -> new ServiceUnavailableException(err.getMessage()));
+                    .onErrorReturn(new ArrayList<LocationModel>());
         }
         return response.flatMap(resp -> {
-                    if (resp.getEntry() == null || resp.getEntry().isEmpty()) {
+                    if (resp == null || resp.getEntry() == null || resp.getEntry().isEmpty()) {
                         return Mono.just(new ArrayList<LocationModel>());
                     }
                     List<Resource> practitionerRoleResponseList = resp.getEntry().stream().map(entry -> entry.getResource()).toList();
                     // Fetch locations
                     return Flux.fromIterable(practitionerRoleResponseList)
                             .flatMap(resource -> Flux.fromIterable(resource.getLocation()))
+                            .filter(location -> location != null && location.getReference() != null)
                             .flatMap(locationRef -> {
                                 String path = locationRef.getReference(); // e.g., "Location/123"
                                 String query = String.format("%s/%s", baseURL, path);
@@ -205,7 +211,7 @@ public class PractitionerService {
                             })
                             .collectList();
                 })
-                .onErrorMap(err -> new ServiceUnavailableException(err.getMessage()));
+                .onErrorReturn(new ArrayList<LocationModel>());
     }
 
     public Mono<ResponseEntity<UnifiedConciseModel>> getUnifiedConciseModel(
@@ -216,9 +222,9 @@ public class PractitionerService {
         Mono<NPIRegistryResponse> npiRegistry = npiRegistryService.fetchPractitionerByNPI(npi);
         // PHASE 2: FHIR ENDPOINT(S)
         Mono<PractitionerRoleModel> practitionerRole;
-        Mono<List<PractitionerModel>> practitioners = null;
-        Mono<List<OrganizationModel>> organizations = null;
-        Mono<List<LocationModel>> locations = null;
+        Mono<List<PractitionerModel>> practitioners;
+        Mono<List<OrganizationModel>> organizations;
+        Mono<List<LocationModel>> locations;
 
         if (target == HealthPlanOrganizationName.CIGNA) {
             practitionerRole = getHealthPlan(npi, cignaConfig);
@@ -354,17 +360,21 @@ public class PractitionerService {
                     elevanceHealthConfig.getBaseURL(),
                     elevanceHealthConfig
             );
+        } else {
+            // Handle unexpected target - should never happen but provides a fallback
+            practitioners = Mono.just(new ArrayList<PractitionerModel>());
+            organizations = Mono.just(new ArrayList<OrganizationModel>());
+            locations = Mono.just(new ArrayList<LocationModel>());
         }
 
-        if (organizations == null) { organizations = Mono.just(Arrays.asList(new OrganizationModel())); }
-        if (locations == null) { locations = Mono.just(Arrays.asList(new LocationModel())); }
-        if (practitioners == null) { practitioners = Mono.just(Arrays.asList(new PractitionerModel())); }
 
         // PHASE 4: Combine Model
         return Mono.zip(npiRegistry, practitioners, organizations, locations)
+                .doOnNext(tuple -> log.debug("Mono.zip completed successfully for NPI: {}", npi))
+                .doOnError(err -> log.error("Error in Mono.zip for NPI: {}: {}", npi, err.getMessage(), err))
                 .map(tupleData -> {
                     NPIRegistryResponse npiRegistryResponse = tupleData.getT1();
-                    if (npiRegistryResponse.getResults().size() == 0) { 
+                    if (npiRegistryResponse.getResults().isEmpty()) {
                         return ResponseEntity.ok(new UnifiedConciseModel(target)); 
                     }
                     List<PractitionerModel> practitioner = tupleData.getT2();
@@ -398,6 +408,9 @@ public class PractitionerService {
                     return ResponseEntity.ok(model);
                 })
                 .defaultIfEmpty(ResponseEntity.notFound().build())
-                .onErrorMap(err -> new ServiceUnavailableException(err.getMessage()));
+                .onErrorResume(err -> {
+                    log.error("Error processing unified model for NPI: {}", npi, err);
+                    return Mono.just(ResponseEntity.status(500).body(new UnifiedConciseModel(target)));
+                });
     }
 }

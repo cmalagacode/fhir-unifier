@@ -63,4 +63,8 @@ spring:
         provider:
           elevance-health:
             token-uri: "https://totalview.healthos.elevancehealth.com/client.oauth2/unregistered/api/v1/token"
+logging:
+  level:
+#    com.github.cmalagacode.fhirunifier: DEBUG  # For development
+    com.github.cmalagacode.fhirunifier: INFO  # For production
 
