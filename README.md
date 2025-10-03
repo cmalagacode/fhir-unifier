@@ -41,4 +41,6 @@ Think of this like a data unification layer that makes it easier to view the dat
 - Path
   - docs/goals/* (Contains documentation on the goal of the project and its strategy to achieve these goals)
   - docs/components/* (contains documentation on fhir and other components)
+- Swagger API Documentation
+  - swagger-ui/index.html
 

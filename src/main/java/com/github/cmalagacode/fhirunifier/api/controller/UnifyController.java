@@ -27,11 +27,10 @@ public class UnifyController {
     public Mono<ResponseEntity<UnifiedConciseModel>> getModel(
             @RequestParam(name = "model", required = true) Model model,
             @RequestParam(name = "npi", required = true) String npi,
-            @RequestParam(name = "primaryTaxonomy", required = false) String primaryTaxonomy,
             @RequestParam(name = "target", required = true) HealthPlanOrganizationName target
     ) {
         if (model == Model.CONCISE) {
-            return practitionerService.getUnifiedConciseModel(npi, target, primaryTaxonomy);
+            return practitionerService.getUnifiedConciseModel(npi, target);
         }
         return Mono.just(ResponseEntity.badRequest().build());
     }

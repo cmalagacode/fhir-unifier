@@ -85,138 +85,217 @@ public class PractitionerService {
     }
 
     private Mono<List<OrganizationModel>> getOrganizations(
-            Mono<PractitionerRoleModel> response, String baseURL,
-            Config config
+            Mono<PractitionerRoleModel> response, String baseURL, Config config
     ) {
         if (config.getOauth2()) {
-            return response.flatMap(resp -> {
-                        if (resp == null || resp.getEntry() == null || resp.getEntry().isEmpty()) {
-                            return Mono.just(new ArrayList<OrganizationModel>());
+            return response.flatMapMany(initialResp -> {
+                        if (initialResp == null || initialResp.getEntry() == null || initialResp.getEntry().isEmpty()) {
+                            return Flux.empty();
                         }
-                        List<Resource> practitionerRoleResponseList = resp.getEntry().stream().map(entry -> entry.getResource()).toList();
-                        // Fetch organizations
-                        Mono<List<OrganizationModel>> organizationsMono = Flux.fromIterable(practitionerRoleResponseList)
-                                .map(Resource::getOrganization)
-                                .filter(org -> org != null && org.getReference() != null)
-                                .map(org -> org.getReference())
-                                .flatMap(path -> {
-                                    String query = String.format("%s/%s", baseURL, path);
-                                    return oauth2FetchClient.fetchOrganization(query, config.getRegistrationId());
+
+                        return Flux.just(initialResp)
+                                .expand(currentResp -> {
+                                    boolean hasNext = fhirMorePages(currentResp.getLink());
+                                    if (!hasNext) return Mono.empty();
+
+                                    String nextUrl = currentResp.getLink().size() > 1
+                                            ? currentResp.getLink().get(1).getUrl()
+                                            : null;
+
+                                    return nextUrl != null
+                                            ? oauth2FetchClient.fetchPractitionerRole(nextUrl, config.getRegistrationId())
+                                            : Mono.empty();
                                 })
-                                .collectList();
-                        return organizationsMono;
+                                .flatMap(page -> Flux.fromIterable(page.getEntry()))
+                                .map(entry -> entry.getResource());
                     })
-                    .onErrorReturn(new ArrayList<OrganizationModel>());
+                    .map(Resource::getOrganization)
+                    .filter(org -> org != null && org.getReference() != null)
+                    .map(org -> org.getReference())
+                    .flatMap(path -> {
+                        String query = String.format("%s/%s", baseURL, path);
+                        return oauth2FetchClient.fetchOrganization(query, config.getRegistrationId());
+                    })
+                    .collectList()
+                    .onErrorReturn(new ArrayList<>());
         }
-        return response.flatMap(resp -> {
-                    if (resp == null || resp.getEntry() == null || resp.getEntry().isEmpty()) {
-                        return Mono.just(new ArrayList<OrganizationModel>());
+
+        // Non-auth flow
+        return response.flatMapMany(initialResp -> {
+                    if (initialResp == null || initialResp.getEntry() == null || initialResp.getEntry().isEmpty()) {
+                        return Flux.empty();
                     }
-                    List<Resource> practitionerRoleResponseList = resp.getEntry().stream().map(entry -> entry.getResource()).toList();
-                    // Fetch organizations
-                    Mono<List<OrganizationModel>> organizationsMono = Flux.fromIterable(practitionerRoleResponseList)
-                            .map(Resource::getOrganization)
-                            .filter(org -> org != null && org.getReference() != null)
-                            .map(org -> org.getReference())
-                            .flatMap(path -> {
-                                String query = String.format("%s/%s", baseURL, path);
-                                return simpleFetchClient.fetchOrganization(query);
+
+                    return Flux.just(initialResp)
+                            .expand(currentResp -> {
+                                boolean hasNext = fhirMorePages(currentResp.getLink());
+                                if (!hasNext) return Mono.empty();
+
+                                String nextUrl = currentResp.getLink().size() > 1
+                                        ? currentResp.getLink().get(1).getUrl()
+                                        : null;
+
+                                return nextUrl != null
+                                        ? simpleFetchClient.fetchPractitionerRole(nextUrl)
+                                        : Mono.empty();
                             })
-                            .collectList();
-                    return organizationsMono;
+                            .flatMap(page -> Flux.fromIterable(page.getEntry()))
+                            .map(entry -> entry.getResource());
                 })
-                .onErrorReturn(new ArrayList<OrganizationModel>());
+                .map(Resource::getOrganization)
+                .filter(org -> org != null && org.getReference() != null)
+                .map(org -> org.getReference())
+                .flatMap(path -> {
+                    String query = String.format("%s/%s", baseURL, path);
+                    return simpleFetchClient.fetchOrganization(query);
+                })
+                .collectList()
+                .onErrorReturn(new ArrayList<>());
     }
+
 
     private Mono<List<PractitionerModel>> getPractitioners(
-            Mono<PractitionerRoleModel> response, String baseURL,
-            Config config
+            Mono<PractitionerRoleModel> response, String baseURL, Config config
     ) {
         if (config.getOauth2()) {
-            return response.flatMap(resp -> {
-                        if (resp == null || resp.getEntry() == null || resp.getEntry().isEmpty()) {
-                            return Mono.just(new ArrayList<PractitionerModel>());
+            return response.flatMapMany(initialResp -> {
+                        if (initialResp == null || initialResp.getEntry() == null || initialResp.getEntry().isEmpty()) {
+                            return Flux.empty();
                         }
-                        List<Resource> practitionerRoleResponseList = resp.getEntry().stream().map(entry -> entry.getResource()).toList();
-                        // Fetch practitioners
-                        Mono<List<PractitionerModel>> practitionersMono = Flux.fromIterable(practitionerRoleResponseList)
-                                .map(Resource::getPractitioner)
-                                .filter(practitioner -> practitioner != null && practitioner.getReference() != null)
-                                .map(prac -> prac.getReference())
-                                .flatMap(path -> {
-                                    String query = String.format("%s/%s", baseURL, path);
-                                    return oauth2FetchClient.fetchPractitioner(query, config.getRegistrationId());
+
+                        return Flux.just(initialResp)
+                                .expand(currentResp -> {
+                                    boolean hasNext = fhirMorePages(currentResp.getLink());
+                                    if (!hasNext) return Mono.empty();
+
+                                    String nextUrl = currentResp.getLink().size() > 1
+                                            ? currentResp.getLink().get(1).getUrl()
+                                            : null;
+
+                                    return nextUrl != null
+                                            ? oauth2FetchClient.fetchPractitionerRole(nextUrl, config.getRegistrationId())
+                                            : Mono.empty();
                                 })
-                                .collectList();
-                        return practitionersMono;
+                                .flatMap(page -> Flux.fromIterable(page.getEntry()))
+                                .map(entry -> entry.getResource());
                     })
-                    .onErrorReturn(new ArrayList<PractitionerModel>());
+                    .map(Resource::getPractitioner)
+                    .filter(practitioner -> practitioner != null && practitioner.getReference() != null)
+                    .map(prac -> prac.getReference())
+                    .flatMap(path -> {
+                        String query = String.format("%s/%s", baseURL, path);
+                        return oauth2FetchClient.fetchPractitioner(query, config.getRegistrationId());
+                    })
+                    .collectList()
+                    .onErrorReturn(new ArrayList<>());
         }
-        return response.flatMap(resp -> {
-                    if (resp == null || resp.getEntry() == null || resp.getEntry().isEmpty()) {
-                        return Mono.just(new ArrayList<PractitionerModel>());
+
+        // Non-auth flow
+        return response.flatMapMany(initialResp -> {
+                    if (initialResp == null || initialResp.getEntry() == null || initialResp.getEntry().isEmpty()) {
+                        return Flux.empty();
                     }
-                    List<Resource> practitionerRoleResponseList = resp.getEntry().stream().map(entry -> entry.getResource()).toList();
-                    // Fetch practitioners
-                    Mono<List<PractitionerModel>> practitionersMono = Flux.fromIterable(practitionerRoleResponseList)
-                            .map(Resource::getPractitioner)
-                            .filter(practitioner -> practitioner != null && practitioner.getReference() != null)
-                            .map(prac -> prac.getReference())
-                            .flatMap(path -> {
-                                String query = String.format("%s/%s", baseURL, path);
-                                return simpleFetchClient.fetchPractitioner(query);
+
+                    return Flux.just(initialResp)
+                            .expand(currentResp -> {
+                                boolean hasNext = fhirMorePages(currentResp.getLink());
+                                if (!hasNext) return Mono.empty();
+
+                                String nextUrl = currentResp.getLink().size() > 1
+                                        ? currentResp.getLink().get(1).getUrl()
+                                        : null;
+
+                                return nextUrl != null
+                                        ? simpleFetchClient.fetchPractitionerRole(nextUrl)
+                                        : Mono.empty();
                             })
-                            .collectList();
-                    return practitionersMono;
+                            .flatMap(page -> Flux.fromIterable(page.getEntry()))
+                            .map(entry -> entry.getResource());
                 })
-                .onErrorReturn(new ArrayList<PractitionerModel>());
+                .map(Resource::getPractitioner)
+                .filter(practitioner -> practitioner != null && practitioner.getReference() != null)
+                .map(prac -> prac.getReference())
+                .flatMap(path -> {
+                    String query = String.format("%s/%s", baseURL, path);
+                    return simpleFetchClient.fetchPractitioner(query);
+                })
+                .collectList()
+                .onErrorReturn(new ArrayList<>());
     }
+
 
     private Mono<List<LocationModel>> getLocations(
-            Mono<PractitionerRoleModel> response, String baseURL,
-            Config config
+            Mono<PractitionerRoleModel> response, String baseURL, Config config
     ) {
         if (config.getOauth2()) {
-            return response.flatMap(resp -> {
-                        if (resp == null || resp.getEntry() == null || resp.getEntry().isEmpty()) {
-                            return Mono.just(new ArrayList<LocationModel>());
+            return response.flatMapMany(initialResp -> {
+                        if (initialResp == null || initialResp.getEntry() == null || initialResp.getEntry().isEmpty()) {
+                            return Flux.empty();
                         }
-                        List<Resource> practitionerRoleResponseList = resp.getEntry().stream().map(entry -> entry.getResource()).toList();
-                        // Fetch locations
-                        return Flux.fromIterable(practitionerRoleResponseList)
-                                .flatMap(resource -> Flux.fromIterable(resource.getLocation()))
-                                .filter(location -> location != null && location.getReference() != null)
-                                .flatMap(locationRef -> {
-                                    String path = locationRef.getReference(); // e.g., "Location/123"
-                                    String query = String.format("%s/%s", baseURL, path);
-                                    return oauth2FetchClient.fetchLocation(query,  config.getRegistrationId());
+
+                        return Flux.just(initialResp)
+                                .expand(currentResp -> {
+                                    boolean hasNext = fhirMorePages(currentResp.getLink());
+                                    if (!hasNext) return Mono.empty();
+
+                                    String nextUrl = currentResp.getLink().size() > 1
+                                            ? currentResp.getLink().get(1).getUrl()
+                                            : null;
+
+                                    return nextUrl != null
+                                            ? oauth2FetchClient.fetchPractitionerRole(nextUrl, config.getRegistrationId())
+                                            : Mono.empty();
                                 })
-                                .collectList();
+                                .flatMap(page -> Flux.fromIterable(page.getEntry()))
+                                .map(entry -> entry.getResource());
                     })
-                    .onErrorReturn(new ArrayList<LocationModel>());
+                    .flatMap(resource -> Flux.fromIterable(resource.getLocation()))
+                    .filter(location -> location != null && location.getReference() != null)
+                    .flatMap(locationRef -> {
+                        String path = locationRef.getReference(); // e.g., "Location/123"
+                        String query = String.format("%s/%s", baseURL, path);
+                        return oauth2FetchClient.fetchLocation(query, config.getRegistrationId());
+                    })
+                    .collectList()
+                    .onErrorReturn(new ArrayList<>());
         }
-        return response.flatMap(resp -> {
-                    if (resp == null || resp.getEntry() == null || resp.getEntry().isEmpty()) {
-                        return Mono.just(new ArrayList<LocationModel>());
+
+        // Non-auth flow
+        return response.flatMapMany(initialResp -> {
+                    if (initialResp == null || initialResp.getEntry() == null || initialResp.getEntry().isEmpty()) {
+                        return Flux.empty();
                     }
-                    List<Resource> practitionerRoleResponseList = resp.getEntry().stream().map(entry -> entry.getResource()).toList();
-                    // Fetch locations
-                    return Flux.fromIterable(practitionerRoleResponseList)
-                            .flatMap(resource -> Flux.fromIterable(resource.getLocation()))
-                            .filter(location -> location != null && location.getReference() != null)
-                            .flatMap(locationRef -> {
-                                String path = locationRef.getReference(); // e.g., "Location/123"
-                                String query = String.format("%s/%s", baseURL, path);
-                                return simpleFetchClient.fetchLocation(query);
+
+                    return Flux.just(initialResp)
+                            .expand(currentResp -> {
+                                boolean hasNext = fhirMorePages(currentResp.getLink());
+                                if (!hasNext) return Mono.empty();
+
+                                String nextUrl = currentResp.getLink().size() > 1
+                                        ? currentResp.getLink().get(1).getUrl()
+                                        : null;
+
+                                return nextUrl != null
+                                        ? simpleFetchClient.fetchPractitionerRole(nextUrl)
+                                        : Mono.empty();
                             })
-                            .collectList();
+                            .flatMap(page -> Flux.fromIterable(page.getEntry()))
+                            .map(entry -> entry.getResource());
                 })
-                .onErrorReturn(new ArrayList<LocationModel>());
+                .flatMap(resource -> Flux.fromIterable(resource.getLocation()))
+                .filter(location -> location != null && location.getReference() != null)
+                .flatMap(locationRef -> {
+                    String path = locationRef.getReference(); // e.g., "Location/123"
+                    String query = String.format("%s/%s", baseURL, path);
+                    return simpleFetchClient.fetchLocation(query);
+                })
+                .collectList()
+                .onErrorReturn(new ArrayList<>());
     }
 
+
     public Mono<ResponseEntity<UnifiedConciseModel>> getUnifiedConciseModel(
-            String npi, HealthPlanOrganizationName target,
-            String primaryTaxonomy
+            String npi, HealthPlanOrganizationName target
     ) {
         // PHASE 1: NPI REGISTRY
         Mono<NPIRegistryResponse> npiRegistry = npiRegistryService.fetchPractitionerByNPI(npi);
