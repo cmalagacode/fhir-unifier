@@ -23,7 +23,7 @@ public class UnifyController {
         this.practitionerService = practitionerService;
     }
 
-    @GetMapping(value = "/v0.1", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/v1", produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<ResponseEntity<UnifiedConciseModel>> getModel(
             @RequestParam(name = "model", required = true) Model model,
             @RequestParam(name = "npi", required = true) String npi,
