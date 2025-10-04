@@ -24,7 +24,7 @@ public class TestControllers {
     public void getCigna() throws Exception {
         for (int i = 0; i < npiList.size(); i++) {
             var query = String.format(
-                    "/unifier/v0.1?npi=%s&model=CONCISE&target=%s",
+                    "/unifier/v1?npi=%s&model=CONCISE&target=%s",
                     npiList.get(i),
                     HealthPlanOrganizationName.CIGNA
             );
@@ -36,7 +36,7 @@ public class TestControllers {
     public void getUnitedHealthCare() throws Exception {
         for (int i = 0; i < npiList.size(); i++) {
             var query = String.format(
-                    "/unifier/v0.1?npi=%s&model=CONCISE&target=%s",
+                    "/unifier/v1?npi=%s&model=CONCISE&target=%s",
                     npiList.get(i),
                     HealthPlanOrganizationName.UNITED_HEALTH_CARE
             );
@@ -49,7 +49,7 @@ public class TestControllers {
     public void getIndependenceBlueCross() throws Exception {
         for (int i = 0; i < npiList.size(); i++) {
             var query = String.format(
-                    "/unifier/v0.1?npi=%s&model=CONCISE&target=%s",
+                    "/unifier/v1?npi=%s&model=CONCISE&target=%s",
                     npiList.get(i),
                     HealthPlanOrganizationName.INDEPENDENCE_BLUE_CROSS
             );
@@ -62,7 +62,7 @@ public class TestControllers {
     public void getKaiserPermanente() throws Exception {
         for (int i = 0; i < npiList.size(); i++) {
             var query = String.format(
-                    "/unifier/v0.1?npi=%s&model=CONCISE&target=%s",
+                    "/unifier/v1?npi=%s&model=CONCISE&target=%s",
                     npiList.get(i),
                     HealthPlanOrganizationName.KAISER_PERMANENTE
             );
@@ -75,7 +75,7 @@ public class TestControllers {
     public void getMolinaHealthCare() throws Exception {
         for (int i = 0; i < npiList.size(); i++) {
             var query = String.format(
-                    "/unifier/v0.1?npi=%s&model=CONCISE&target=%s",
+                    "/unifier/v1?npi=%s&model=CONCISE&target=%s",
                     npiList.get(i),
                     HealthPlanOrganizationName.MOLINA_HEALTHCARE
             );
