@@ -20,8 +20,8 @@ public class UnifiedConciseModel {
     private final List<LocationModel> locationModel;
     private final HealthPlanOrganizationName target;
 
-    public UnifiedConciseModel(HealthPlanOrganizationName target) {
-        this.npi = "None";
+    public UnifiedConciseModel(String npi, HealthPlanOrganizationName target) {
+        this.npi = npi;
         this.npiRegistryConciseModel = new NPIRegistryConciseModel();
         this.practitionerModel = Arrays.asList();
         this.organizationModel = Arrays.asList();
