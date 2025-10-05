@@ -454,7 +454,7 @@ public class PractitionerService {
                 .map(tupleData -> {
                     NPIRegistryResponse npiRegistryResponse = tupleData.getT1();
                     if (npiRegistryResponse.getResults().isEmpty()) {
-                        return ResponseEntity.ok(new UnifiedConciseModel(target)); 
+                        return ResponseEntity.ok(new UnifiedConciseModel(npi, target));
                     }
                     List<PractitionerModel> practitioner = tupleData.getT2();
                     List<OrganizationModel> organization = tupleData.getT3();
@@ -489,7 +489,7 @@ public class PractitionerService {
                 .defaultIfEmpty(ResponseEntity.notFound().build())
                 .onErrorResume(err -> {
                     log.error("Error processing unified model for NPI: {}", npi, err);
-                    return Mono.just(ResponseEntity.status(500).body(new UnifiedConciseModel(target)));
+                    return Mono.just(ResponseEntity.status(500).body(new UnifiedConciseModel(npi, target)));
                 });
     }
 }
