@@ -62,9 +62,11 @@ public class PractitionerService {
     }
 
     private boolean fhirMorePages(List<Link> links) {
-        for (Link link : links) {
-            if (link.getRelation().equalsIgnoreCase("next")) {
-                return true;
+        if (links != null) {
+            for (Link link : links) {
+                if (link.getRelation().equalsIgnoreCase("next")) {
+                    return true;
+                }
             }
         }
         return false;
