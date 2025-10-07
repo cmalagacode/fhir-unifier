@@ -46,7 +46,7 @@ support:
     practitionerRolePath: "PractitionerRole"
     practitionerRoleURLParameter: "practitioner.identifier"
     practitionerRoleURLQueryViaNPI: true
-    oauth2: false
+    oauth2: true
     registrationId: "elevance-health"
 spring:
   security:
