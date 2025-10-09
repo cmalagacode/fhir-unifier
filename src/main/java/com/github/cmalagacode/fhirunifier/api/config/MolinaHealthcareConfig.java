@@ -13,6 +13,7 @@ public class MolinaHealthcareConfig implements Config {
     private String practitionerRoleURLParameter;
     private boolean oauth2;
     private String registrationId;
+    private boolean paginationSupported;
 
     public String getBaseURL() {
         return baseURL;
@@ -60,5 +61,13 @@ public class MolinaHealthcareConfig implements Config {
 
     public void setRegistrationId(String registrationId) {
         this.registrationId = registrationId;
+    }
+
+    public boolean getPaginationSupported() {
+        return paginationSupported;
+    }
+
+    public void setPaginationSupported(boolean paginationSupported) {
+        this.paginationSupported = paginationSupported;
     }
 }

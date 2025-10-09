@@ -6,6 +6,7 @@ support:
     practitionerRoleURLQueryViaNPI: true
     oauth2: false
     registrationId: "cigna"
+    paginationSupported: true
   united-health-care:
     baseURL: "https://public.fhir.flex.optum.com/R4"
     practitionerRolePath: "PractitionerRole"
@@ -13,6 +14,7 @@ support:
     practitionerRoleURLQueryViaNPI: true
     oauth2: false
     registrationId: "united-health-care"
+    paginationSupported: true
   kaiser-permanente:
     baseURL: "https://kpx-service-bus.kp.org/service/hp/mhpo/healthplanproviderv1rc"
     practitionerRolePath: "PractitionerRole"
@@ -20,6 +22,7 @@ support:
     practitionerRoleURLQueryViaNPI: true
     oauth2: false
     registrationId: "kaiser-permanente"
+    paginationSupported: true
   independence-blue-cross:
     baseURL: "https://eapics.ibx.com/provider/v1/fhir"
     practitionerRolePath: "PractitionerRole"
@@ -27,6 +30,7 @@ support:
     practitionerRoleURLQueryViaNPI: true
     oauth2: false
     registrationId: "independence-blue-cross"
+    paginationSupported: false # IBX has broken pagination bug - next page token is expired as soon as current page loads
   molina-healthcare:
     baseURL: "https://api.interop.molinahealthcare.com/providerdirectory"
     practitionerRolePath: "PractitionerRole"
@@ -34,6 +38,7 @@ support:
     practitionerRoleURLQueryViaNPI: true
     oauth2: false
     registrationId: "molina-healthcare"
+    paginationSupported: true
   health-care-service-corporation:
     baseURL: "https://api.hcsc.net/providerfinder/sapphire/fhir"
     practitionerRolePath: "PractitionerRole"
@@ -41,6 +46,7 @@ support:
     practitionerRoleURLQueryViaNPI: true
     oauth2: false
     registrationId: "health-care-service-corporation"
+    paginationSupported: true
   elevance-health:
     baseURL: "https://totalview.healthos.elevancehealth.com/resources/unregistered/api/v1/fhir/cms_mandate/mcd"
     practitionerRolePath: "PractitionerRole"
@@ -48,7 +54,15 @@ support:
     practitionerRoleURLQueryViaNPI: true
     oauth2: true
     registrationId: "elevance-health"
+    paginationSupported: true
+server:
+  error:
+    whitelabel:
+      enabled: false
 spring:
+  mvc:
+    async:
+      request-timeout: 300000
   security:
     oauth2:
       client:
@@ -67,4 +81,5 @@ logging:
   level:
 #    com.github.cmalagacode.fhirunifier: DEBUG  # For development
     com.github.cmalagacode.fhirunifier: INFO  # For production
+
 
