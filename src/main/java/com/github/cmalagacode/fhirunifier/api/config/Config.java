@@ -6,4 +6,5 @@ public interface Config {
     String getPractitionerRoleURLParameter();
     boolean getOauth2();
     String getRegistrationId();
+    boolean getPaginationSupported();
 }
