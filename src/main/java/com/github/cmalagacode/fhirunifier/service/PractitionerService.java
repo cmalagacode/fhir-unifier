@@ -21,8 +21,10 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 
 @Service
@@ -61,15 +63,15 @@ public class PractitionerService {
         this.elevanceHealthConfig = elevanceHealthConfig;
     }
 
-    private boolean fhirMorePages(List<Link> links) {
-        if (links != null) {
-            for (Link link : links) {
-                if (link.getRelation().equalsIgnoreCase("next")) {
-                    return true;
-                }
+    private String getNextUrl(List<Link> links) {
+        if (links == null) return null;
+
+        for (Link link : links) {
+            if ("next".equalsIgnoreCase(link.getRelation())) {
+                return link.getUrl();
             }
         }
-        return false;
+        return null;
     }
 
     private Mono<PractitionerRoleModel> getHealthPlan(String lookupID, Config config) {
@@ -95,28 +97,38 @@ public class PractitionerService {
                             return Flux.empty();
                         }
 
+                        if (!config.getPaginationSupported()) {
+                            // IBX: Only process first page due to API bug with page tokens
+                            log.warn("Independence Blue Cross pagination disabled due to API bug (page tokens expire)");
+                            return Flux.fromIterable(initialResp.getEntry())
+                                    .map(entry -> entry.getResource());
+                        }
+
+                        AtomicReference<String> lastUrl = new AtomicReference<>();
+
                         return Flux.just(initialResp)
                                 .expand(currentResp -> {
-                                    boolean hasNext = fhirMorePages(currentResp.getLink());
-                                    if (!hasNext) return Mono.empty();
+                                    String nextUrl = getNextUrl(currentResp.getLink());
 
-                                    String nextUrl = currentResp.getLink().size() > 1
-                                            ? currentResp.getLink().get(1).getUrl()
-                                            : null;
+                                    if (nextUrl != null && !nextUrl.equals(lastUrl.get())) {
+                                        lastUrl.set(nextUrl);
+                                        return Mono.delay(Duration.ofMillis(300))
+                                                .then(oauth2FetchClient.fetchPractitionerRole(nextUrl, config.getRegistrationId()));
+                                    }
 
-                                    return nextUrl != null
-                                            ? oauth2FetchClient.fetchPractitionerRole(nextUrl, config.getRegistrationId())
-                                            : Mono.empty();
+                                    return Mono.empty();
                                 })
-                                .flatMap(page -> Flux.fromIterable(page.getEntry()))
+                                .concatMap(page -> Flux.fromIterable(page.getEntry()))
                                 .map(entry -> entry.getResource());
                     })
                     .map(Resource::getOrganization)
                     .filter(org -> org != null && org.getReference() != null)
                     .map(org -> org.getReference())
-                    .flatMap(path -> {
+                    .distinct()
+                    .concatMap(path -> {
                         String query = String.format("%s/%s", baseURL, path);
-                        return oauth2FetchClient.fetchOrganization(query, config.getRegistrationId());
+                        return oauth2FetchClient.fetchOrganization(query, config.getRegistrationId())
+                                .delayElement(Duration.ofMillis(100));
                     })
                     .collectList()
                     .onErrorReturn(new ArrayList<>());
@@ -128,28 +140,39 @@ public class PractitionerService {
                         return Flux.empty();
                     }
 
+                    if (!config.getPaginationSupported()) {
+                        // IBX: Only process first page due to API bug with page tokens
+                        log.warn("Independence Blue Cross pagination disabled due to API bug (page tokens expire)");
+                        return Flux.fromIterable(initialResp.getEntry())
+                                .map(entry -> entry.getResource());
+                    }
+
+                    AtomicReference<String> lastUrl = new AtomicReference<>();
+
                     return Flux.just(initialResp)
                             .expand(currentResp -> {
-                                boolean hasNext = fhirMorePages(currentResp.getLink());
-                                if (!hasNext) return Mono.empty();
+                                String nextUrl = getNextUrl(currentResp.getLink());
 
-                                String nextUrl = currentResp.getLink().size() > 1
-                                        ? currentResp.getLink().get(1).getUrl()
-                                        : null;
+                                if (nextUrl != null && !nextUrl.equals(lastUrl.get())) {
+                                    lastUrl.set(nextUrl);
+                                    return Mono.delay(Duration.ofMillis(300))
+                                            .then(simpleFetchClient.fetchPractitionerRole(nextUrl));
+                                }
 
-                                return nextUrl != null
-                                        ? simpleFetchClient.fetchPractitionerRole(nextUrl)
-                                        : Mono.empty();
+                                return Mono.empty();
+
                             })
-                            .flatMap(page -> Flux.fromIterable(page.getEntry()))
+                            .concatMap(page -> Flux.fromIterable(page.getEntry()))
                             .map(entry -> entry.getResource());
                 })
                 .map(Resource::getOrganization)
                 .filter(org -> org != null && org.getReference() != null)
                 .map(org -> org.getReference())
-                .flatMap(path -> {
+                .distinct()
+                .concatMap(path -> {
                     String query = String.format("%s/%s", baseURL, path);
-                    return simpleFetchClient.fetchOrganization(query);
+                    return simpleFetchClient.fetchOrganization(query)
+                            .delayElement(Duration.ofMillis(100));
                 })
                 .collectList()
                 .onErrorReturn(new ArrayList<>());
@@ -165,28 +188,38 @@ public class PractitionerService {
                             return Flux.empty();
                         }
 
+                        if (!config.getPaginationSupported()) {
+                            // IBX: Only process first page due to API bug with page tokens
+                            log.warn("Independence Blue Cross pagination disabled due to API bug (page tokens expire)");
+                            return Flux.fromIterable(initialResp.getEntry())
+                                    .map(entry -> entry.getResource());
+                        }
+
+                        AtomicReference<String> lastUrl = new AtomicReference<>();
+
                         return Flux.just(initialResp)
                                 .expand(currentResp -> {
-                                    boolean hasNext = fhirMorePages(currentResp.getLink());
-                                    if (!hasNext) return Mono.empty();
+                                    String nextUrl = getNextUrl(currentResp.getLink());
 
-                                    String nextUrl = currentResp.getLink().size() > 1
-                                            ? currentResp.getLink().get(1).getUrl()
-                                            : null;
+                                    if (nextUrl != null && !nextUrl.equals(lastUrl.get())) {
+                                        lastUrl.set(nextUrl);
+                                        return Mono.delay(Duration.ofMillis(300))
+                                                .then(oauth2FetchClient.fetchPractitionerRole(nextUrl, config.getRegistrationId()));
+                                    }
 
-                                    return nextUrl != null
-                                            ? oauth2FetchClient.fetchPractitionerRole(nextUrl, config.getRegistrationId())
-                                            : Mono.empty();
+                                    return Mono.empty();
                                 })
-                                .flatMap(page -> Flux.fromIterable(page.getEntry()))
+                                .concatMap(page -> Flux.fromIterable(page.getEntry()))
                                 .map(entry -> entry.getResource());
                     })
                     .map(Resource::getPractitioner)
                     .filter(practitioner -> practitioner != null && practitioner.getReference() != null)
                     .map(prac -> prac.getReference())
-                    .flatMap(path -> {
+                    .distinct()
+                    .concatMap(path -> {
                         String query = String.format("%s/%s", baseURL, path);
-                        return oauth2FetchClient.fetchPractitioner(query, config.getRegistrationId());
+                        return oauth2FetchClient.fetchPractitioner(query, config.getRegistrationId())
+                                .delayElement(Duration.ofMillis(100));
                     })
                     .collectList()
                     .onErrorReturn(new ArrayList<>());
@@ -198,28 +231,38 @@ public class PractitionerService {
                         return Flux.empty();
                     }
 
+                    if (!config.getPaginationSupported()) {
+                        // IBX: Only process first page due to API bug with page tokens
+                        log.warn("Independence Blue Cross pagination disabled due to API bug (page tokens expire)");
+                        return Flux.fromIterable(initialResp.getEntry())
+                                .map(entry -> entry.getResource());
+                    }
+
+                    AtomicReference<String> lastUrl = new AtomicReference<>();
+
                     return Flux.just(initialResp)
                             .expand(currentResp -> {
-                                boolean hasNext = fhirMorePages(currentResp.getLink());
-                                if (!hasNext) return Mono.empty();
+                                String nextUrl = getNextUrl(currentResp.getLink());
 
-                                String nextUrl = currentResp.getLink().size() > 1
-                                        ? currentResp.getLink().get(1).getUrl()
-                                        : null;
+                                if (nextUrl != null && !nextUrl.equals(lastUrl.get())) {
+                                    lastUrl.set(nextUrl);
+                                    return Mono.delay(Duration.ofMillis(300))
+                                            .then(simpleFetchClient.fetchPractitionerRole(nextUrl));
+                                }
 
-                                return nextUrl != null
-                                        ? simpleFetchClient.fetchPractitionerRole(nextUrl)
-                                        : Mono.empty();
+                                return Mono.empty();
                             })
-                            .flatMap(page -> Flux.fromIterable(page.getEntry()))
+                            .concatMap(page -> Flux.fromIterable(page.getEntry()))
                             .map(entry -> entry.getResource());
                 })
                 .map(Resource::getPractitioner)
                 .filter(practitioner -> practitioner != null && practitioner.getReference() != null)
                 .map(prac -> prac.getReference())
-                .flatMap(path -> {
+                .distinct()
+                .concatMap(path -> {
                     String query = String.format("%s/%s", baseURL, path);
-                    return simpleFetchClient.fetchPractitioner(query);
+                    return simpleFetchClient.fetchPractitioner(query)
+                            .delayElement(Duration.ofMillis(100));
                 })
                 .collectList()
                 .onErrorReturn(new ArrayList<>());
@@ -235,28 +278,38 @@ public class PractitionerService {
                             return Flux.empty();
                         }
 
+                        if (!config.getPaginationSupported()) {
+                            // IBX: Only process first page due to API bug with page tokens
+                            log.warn("Independence Blue Cross pagination disabled due to API bug (page tokens expire)");
+                            return Flux.fromIterable(initialResp.getEntry())
+                                    .map(entry -> entry.getResource());
+                        }
+
+                        AtomicReference<String> lastUrl = new AtomicReference<>();
+
                         return Flux.just(initialResp)
                                 .expand(currentResp -> {
-                                    boolean hasNext = fhirMorePages(currentResp.getLink());
-                                    if (!hasNext) return Mono.empty();
+                                    String nextUrl = getNextUrl(currentResp.getLink());
 
-                                    String nextUrl = currentResp.getLink().size() > 1
-                                            ? currentResp.getLink().get(1).getUrl()
-                                            : null;
+                                    if (nextUrl != null && !nextUrl.equals(lastUrl.get())) {
+                                        lastUrl.set(nextUrl);
+                                        return Mono.delay(Duration.ofMillis(300))
+                                                .then(oauth2FetchClient.fetchPractitionerRole(nextUrl, config.getRegistrationId()));
+                                    }
 
-                                    return nextUrl != null
-                                            ? oauth2FetchClient.fetchPractitionerRole(nextUrl, config.getRegistrationId())
-                                            : Mono.empty();
+                                    return Mono.empty();
                                 })
-                                .flatMap(page -> Flux.fromIterable(page.getEntry()))
+                                .concatMap(page -> Flux.fromIterable(page.getEntry()))
                                 .map(entry -> entry.getResource());
                     })
                     .flatMap(resource -> Flux.fromIterable(resource.getLocation()))
                     .filter(location -> location != null && location.getReference() != null)
-                    .flatMap(locationRef -> {
-                        String path = locationRef.getReference(); // e.g., "Location/123"
+                    .map(location -> location.getReference())
+                    .distinct()
+                    .concatMap(path -> {
                         String query = String.format("%s/%s", baseURL, path);
-                        return oauth2FetchClient.fetchLocation(query, config.getRegistrationId());
+                        return oauth2FetchClient.fetchLocation(query, config.getRegistrationId())
+                                .delayElement(Duration.ofMillis(100));
                     })
                     .collectList()
                     .onErrorReturn(new ArrayList<>());
@@ -268,28 +321,38 @@ public class PractitionerService {
                         return Flux.empty();
                     }
 
+                    if (!config.getPaginationSupported()) {
+                        // IBX: Only process first page due to API bug with page tokens
+                        log.warn("Independence Blue Cross pagination disabled due to API bug (page tokens expire)");
+                        return Flux.fromIterable(initialResp.getEntry())
+                                .map(entry -> entry.getResource());
+                    }
+
+                    AtomicReference<String> lastUrl = new AtomicReference<>();
+
                     return Flux.just(initialResp)
                             .expand(currentResp -> {
-                                boolean hasNext = fhirMorePages(currentResp.getLink());
-                                if (!hasNext) return Mono.empty();
+                                String nextUrl = getNextUrl(currentResp.getLink());
 
-                                String nextUrl = currentResp.getLink().size() > 1
-                                        ? currentResp.getLink().get(1).getUrl()
-                                        : null;
+                                if (nextUrl != null && !nextUrl.equals(lastUrl.get())) {
+                                    lastUrl.set(nextUrl);
+                                    return Mono.delay(Duration.ofMillis(300))
+                                            .then(simpleFetchClient.fetchPractitionerRole(nextUrl));
+                                }
 
-                                return nextUrl != null
-                                        ? simpleFetchClient.fetchPractitionerRole(nextUrl)
-                                        : Mono.empty();
+                                return Mono.empty();
                             })
-                            .flatMap(page -> Flux.fromIterable(page.getEntry()))
+                            .concatMap(page -> Flux.fromIterable(page.getEntry()))
                             .map(entry -> entry.getResource());
                 })
                 .flatMap(resource -> Flux.fromIterable(resource.getLocation()))
                 .filter(location -> location != null && location.getReference() != null)
-                .flatMap(locationRef -> {
-                    String path = locationRef.getReference(); // e.g., "Location/123"
+                .map(location -> location.getReference())
+                .distinct()
+                .concatMap(path -> {
                     String query = String.format("%s/%s", baseURL, path);
-                    return simpleFetchClient.fetchLocation(query);
+                    return simpleFetchClient.fetchLocation(query)
+                            .delayElement(Duration.ofMillis(100));
                 })
                 .collectList()
                 .onErrorReturn(new ArrayList<>());
@@ -308,7 +371,7 @@ public class PractitionerService {
         Mono<List<LocationModel>> locations;
 
         if (target == HealthPlanOrganizationName.CIGNA) {
-            practitionerRole = getHealthPlan(npi, cignaConfig);
+            practitionerRole = getHealthPlan(npi, cignaConfig).cache();
             // PHASE 3: Get Carrier Data
 
             practitioners = getPractitioners(
@@ -328,7 +391,7 @@ public class PractitionerService {
             );
 
         } else if (target == HealthPlanOrganizationName.UNITED_HEALTH_CARE) {
-            practitionerRole = getHealthPlan(npi, unitedHealthCareConfig);
+            practitionerRole = getHealthPlan(npi, unitedHealthCareConfig).cache();
             // PHASE 3: Get Carrier Data
 
             practitioners = getPractitioners(
@@ -347,7 +410,7 @@ public class PractitionerService {
                     unitedHealthCareConfig
             );
         } else if (target == HealthPlanOrganizationName.KAISER_PERMANENTE) {
-            practitionerRole = getHealthPlan(npi, kaiserPermanenteConfig);
+            practitionerRole = getHealthPlan(npi, kaiserPermanenteConfig).cache();
             // PHASE 3: Get Carrier Data
 
             practitioners = getPractitioners(
@@ -366,7 +429,7 @@ public class PractitionerService {
                     kaiserPermanenteConfig
             );
         } else if (target == HealthPlanOrganizationName.INDEPENDENCE_BLUE_CROSS) {
-            practitionerRole = getHealthPlan(npi, independenceBlueCrossConfig);
+            practitionerRole = getHealthPlan(npi, independenceBlueCrossConfig).cache();
             // PHASE 3: Get Carrier Data
 
             practitioners = getPractitioners(
@@ -385,7 +448,7 @@ public class PractitionerService {
                     independenceBlueCrossConfig
             );
         } else if (target == HealthPlanOrganizationName.MOLINA_HEALTHCARE) {
-            practitionerRole = getHealthPlan(npi, molinaHealthcareConfig);
+            practitionerRole = getHealthPlan(npi, molinaHealthcareConfig).cache();
             // PHASE 3: Get Carrier Data
 
             practitioners = getPractitioners(
@@ -404,7 +467,7 @@ public class PractitionerService {
                     molinaHealthcareConfig
             );
         } else if (target == HealthPlanOrganizationName.HEALTH_CARE_SERVICE_CORPORATION) {
-            practitionerRole = getHealthPlan(npi, healthCareServiceCorporationConfig);
+            practitionerRole = getHealthPlan(npi, healthCareServiceCorporationConfig).cache();
             // PHASE 3: Get Carrier Data
 
             practitioners = getPractitioners(
@@ -423,7 +486,7 @@ public class PractitionerService {
                     healthCareServiceCorporationConfig
             );
         } else if (target == HealthPlanOrganizationName.ELEVANCE_HEALTH) {
-            practitionerRole = getHealthPlan(npi, elevanceHealthConfig);
+            practitionerRole = getHealthPlan(npi, elevanceHealthConfig).cache();
             // PHASE 3: Get Carrier Data
 
             practitioners = getPractitioners(
