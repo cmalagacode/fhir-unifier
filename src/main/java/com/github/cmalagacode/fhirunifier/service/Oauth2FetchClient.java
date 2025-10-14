@@ -26,7 +26,7 @@ public class Oauth2FetchClient {
     private final OAuth2AuthorizedClientManager authorizedClientManager;
 
     public Oauth2FetchClient(@Qualifier("oauth2WebClient") WebClient oauth2WebClient,
-                             OAuth2AuthorizedClientManager authorizedClientManager) {
+                             @Qualifier("authorizedClientManager") OAuth2AuthorizedClientManager authorizedClientManager) {
         this.client = oauth2WebClient;
         this.authorizedClientManager = authorizedClientManager;
     }
