@@ -7,8 +7,9 @@ import com.github.cmalagacode.fhirunifier.api.model.fhirpractitionerrole.Practit
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
 
-import org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.stereotype.Service;
+import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
@@ -22,29 +23,45 @@ public class Oauth2FetchClient {
     private static final Logger log = LoggerFactory.getLogger(Oauth2FetchClient.class);
 
     private final WebClient client;
+    private final OAuth2AuthorizedClientManager authorizedClientManager;
 
-    public Oauth2FetchClient(@Qualifier("oauth2WebClient") WebClient oauth2WebClient) {
+    public Oauth2FetchClient(@Qualifier("oauth2WebClient") WebClient oauth2WebClient,
+                             OAuth2AuthorizedClientManager authorizedClientManager) {
         this.client = oauth2WebClient;
+        this.authorizedClientManager = authorizedClientManager;
     }
 
     private <T> Mono<T> fetchWithRetry(String url, String registrationId, Class<T> responseType, T emptyResponse) {
         log.debug("Fetching {} from URL: {} with registrationId: {}",
                 responseType.getSimpleName(), url, registrationId);
 
-        return client.get()
-                .uri(url)
-                .attributes(ServletOAuth2AuthorizedClientExchangeFilterFunction
-                        .clientRegistrationId(registrationId))
-                .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .bodyToMono(responseType)
+        return Mono.fromCallable(() -> {
+                    OAuth2AuthorizeRequest authorizeRequest = OAuth2AuthorizeRequest
+                            .withClientRegistrationId(registrationId)
+                            .principal("service-account")
+                            .build();
+                    return authorizedClientManager.authorize(authorizeRequest);
+                })
+                .flatMap(authorizedClient -> {
+                    if (authorizedClient == null) {
+                        return Mono.error(new IllegalStateException("Failed to authorize client: " + registrationId));
+                    }
+
+                    String token = authorizedClient.getAccessToken().getTokenValue();
+
+                    return client.get()
+                            .uri(url)
+                            .header("Authorization", "Bearer " + token)
+                            .accept(MediaType.APPLICATION_JSON)
+                            .retrieve()
+                            .bodyToMono(responseType);
+                })
                 .retryWhen(Retry.backoff(8, Duration.ofSeconds(3))
                         .maxBackoff(Duration.ofSeconds(30))
                         .jitter(0.75)
                         .filter(throwable -> {
                             if (throwable instanceof WebClientResponseException) {
                                 WebClientResponseException ex = (WebClientResponseException) throwable;
-                                // retry on 429 and 503
                                 return ex.getStatusCode().value() == 429 || ex.getStatusCode().value() == 503;
                             }
                             return false;
