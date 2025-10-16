@@ -7,6 +7,7 @@ import com.github.cmalagacode.fhirunifier.api.model.fhirpractitionerrole.Practit
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
 
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.stereotype.Service;
 import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
@@ -14,6 +15,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import java.time.Duration;
+import java.util.List;
+
 import reactor.util.retry.Retry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +41,7 @@ public class Oauth2FetchClient {
         return Mono.fromCallable(() -> {
                     OAuth2AuthorizeRequest authorizeRequest = OAuth2AuthorizeRequest
                             .withClientRegistrationId(registrationId)
-                            .principal("service-account")
+                            .principal(new UsernamePasswordAuthenticationToken("service-account", null, List.of()))
                             .build();
                     return authorizedClientManager.authorize(authorizeRequest);
                 })

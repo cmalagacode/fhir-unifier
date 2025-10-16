@@ -50,8 +50,8 @@ public class WebClientConfig {
     @Bean
     public WebClient simpleWebClient() {
         HttpClient httpClient = HttpClient.create()
-                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, CONNECT_TIMEOUT_MS)  // 10 seconds to establish connection
-                .responseTimeout(Duration.ofSeconds(RESPONSE_TIMEOUT_SECONDS))  // 30 seconds for response
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, CONNECT_TIMEOUT_MS)
+                .responseTimeout(Duration.ofSeconds(RESPONSE_TIMEOUT_SECONDS))
                 .doOnConnected(conn ->
                         conn.addHandlerLast(new ReadTimeoutHandler(READ_TIMEOUT_SECONDS, TimeUnit.SECONDS))
                                 .addHandlerLast(new WriteTimeoutHandler(WRITE_TIMEOUT_SECONDS, TimeUnit.SECONDS)));
@@ -69,8 +69,8 @@ public class WebClientConfig {
     @Bean
     WebClient oauth2WebClient(OAuth2AuthorizedClientManager authorizedClientManager) {
         HttpClient httpClient = HttpClient.create()
-                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, CONNECT_TIMEOUT_MS)  // 10 seconds to establish connection
-                .responseTimeout(Duration.ofSeconds(RESPONSE_TIMEOUT_SECONDS))  // 30 seconds for response
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, CONNECT_TIMEOUT_MS)
+                .responseTimeout(Duration.ofSeconds(RESPONSE_TIMEOUT_SECONDS))
                 .doOnConnected(conn ->
                         conn.addHandlerLast(new ReadTimeoutHandler(READ_TIMEOUT_SECONDS, TimeUnit.SECONDS))
                                 .addHandlerLast(new WriteTimeoutHandler(WRITE_TIMEOUT_SECONDS, TimeUnit.SECONDS)));
