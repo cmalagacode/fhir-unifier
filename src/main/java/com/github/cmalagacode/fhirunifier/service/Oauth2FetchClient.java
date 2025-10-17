@@ -4,32 +4,31 @@ import com.github.cmalagacode.fhirunifier.api.model.fhirlocation.LocationModel;
 import com.github.cmalagacode.fhirunifier.api.model.fhirorganization.OrganizationModel;
 import com.github.cmalagacode.fhirunifier.api.model.fhirpractitioner.PractitionerModel;
 import com.github.cmalagacode.fhirunifier.api.model.fhirpractitionerrole.PractitionerRoleModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
-
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
-import org.springframework.stereotype.Service;
+import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
+import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
+
 import java.time.Duration;
 import java.util.List;
-
-import reactor.util.retry.Retry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Service
 public class Oauth2FetchClient {
     private static final Logger log = LoggerFactory.getLogger(Oauth2FetchClient.class);
 
     private final WebClient client;
-    private final OAuth2AuthorizedClientManager authorizedClientManager;
+    private final ReactiveOAuth2AuthorizedClientManager authorizedClientManager;
 
     public Oauth2FetchClient(@Qualifier("oauth2WebClient") WebClient oauth2WebClient,
-                             @Qualifier("authorizedClientManager") OAuth2AuthorizedClientManager authorizedClientManager) {
+                             ReactiveOAuth2AuthorizedClientManager authorizedClientManager) {
         this.client = oauth2WebClient;
         this.authorizedClientManager = authorizedClientManager;
     }
@@ -38,13 +37,12 @@ public class Oauth2FetchClient {
         log.debug("Fetching {} from URL: {} with registrationId: {}",
                 responseType.getSimpleName(), url, registrationId);
 
-        return Mono.fromCallable(() -> {
-                    OAuth2AuthorizeRequest authorizeRequest = OAuth2AuthorizeRequest
-                            .withClientRegistrationId(registrationId)
-                            .principal(new UsernamePasswordAuthenticationToken("service-account", null, List.of()))
-                            .build();
-                    return authorizedClientManager.authorize(authorizeRequest);
-                })
+        OAuth2AuthorizeRequest authorizeRequest = OAuth2AuthorizeRequest
+                .withClientRegistrationId(registrationId)
+                .principal(new UsernamePasswordAuthenticationToken("service-account", null, List.of()))
+                .build();
+
+        return authorizedClientManager.authorize(authorizeRequest)
                 .flatMap(authorizedClient -> {
                     if (authorizedClient == null) {
                         return Mono.error(new IllegalStateException("Failed to authorize client: " + registrationId));
