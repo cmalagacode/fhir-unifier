@@ -1,4 +1,3 @@
-
 package com.github.cmalagacode.fhirunifier.api.config;
 
 import io.netty.channel.ChannelOption;
@@ -8,13 +7,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.security.oauth2.client.*;
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
-import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizedClientManager;
-import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
-import org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction;
+import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
+import org.springframework.security.oauth2.client.web.reactive.function.client.ServerOAuth2AuthorizedClientExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.netty.http.HttpProtocol;
 import reactor.netty.http.client.HttpClient;
 
 import java.time.Duration;
@@ -23,36 +19,66 @@ import java.util.concurrent.TimeUnit;
 @Configuration
 public class WebClientConfig {
 
-    private static final int CONNECT_TIMEOUT_MS = 10_000;  // 10 seconds
+    private static final int CONNECT_TIMEOUT_MS = 10_000;
     private static final int RESPONSE_TIMEOUT_SECONDS = 120;
     private static final int READ_TIMEOUT_SECONDS = 120;
     private static final int WRITE_TIMEOUT_SECONDS = 10;
-    private static final int MAX_IN_MEMORY_SIZE = 10 * 1024 * 1024;  // 10 MB
+    private static final int MAX_IN_MEMORY_SIZE = 10 * 1024 * 1024;
+
 
     @Bean
-    OAuth2AuthorizedClientManager authorizedClientManager(
-            ClientRegistrationRepository clientRegistrationRepository,
-            OAuth2AuthorizedClientRepository authorizedClientRepository
-    ) {
+    public ReactiveOAuth2AuthorizedClientService reactiveOAuth2AuthorizedClientService(
+            ReactiveClientRegistrationRepository clientRegistrationRepository) {
+        return new InMemoryReactiveOAuth2AuthorizedClientService(clientRegistrationRepository);
+    }
 
-        OAuth2AuthorizedClientProvider provider =
-                OAuth2AuthorizedClientProviderBuilder.builder()
+    @Bean
+    public ReactiveOAuth2AuthorizedClientManager authorizedClientManager(
+            ReactiveClientRegistrationRepository clientRegistrationRepository,
+            ReactiveOAuth2AuthorizedClientService authorizedClientService) {
+
+        ReactiveOAuth2AuthorizedClientProvider authorizedClientProvider =
+                ReactiveOAuth2AuthorizedClientProviderBuilder.builder()
                         .clientCredentials()
                         .build();
 
-        DefaultOAuth2AuthorizedClientManager manager =
-                new DefaultOAuth2AuthorizedClientManager(
-                        clientRegistrationRepository, authorizedClientRepository);
-        manager.setAuthorizedClientProvider(provider);
+        AuthorizedClientServiceReactiveOAuth2AuthorizedClientManager authorizedClientManager =
+                new AuthorizedClientServiceReactiveOAuth2AuthorizedClientManager(
+                        clientRegistrationRepository, authorizedClientService);
 
-        return manager;
+        authorizedClientManager.setAuthorizedClientProvider(authorizedClientProvider);
+        return authorizedClientManager;
+    }
+
+    @Bean
+    public WebClient oauth2WebClient(ReactiveOAuth2AuthorizedClientManager authorizedClientManager) {
+        HttpClient httpClient = HttpClient.create()
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, CONNECT_TIMEOUT_MS)
+                .responseTimeout(Duration.ofSeconds(RESPONSE_TIMEOUT_SECONDS))
+                .doOnConnected(conn ->
+                        conn.addHandlerLast(new ReadTimeoutHandler(READ_TIMEOUT_SECONDS, TimeUnit.SECONDS))
+                                .addHandlerLast(new WriteTimeoutHandler(WRITE_TIMEOUT_SECONDS, TimeUnit.SECONDS)));
+
+        ExchangeStrategies exchangeStrategies = ExchangeStrategies.builder()
+                .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(MAX_IN_MEMORY_SIZE))
+                .build();
+
+        ServerOAuth2AuthorizedClientExchangeFilterFunction oauth2FilterFunction =
+                new ServerOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager);
+        oauth2FilterFunction.setDefaultOAuth2AuthorizedClient(true);
+
+        return WebClient.builder()
+                .clientConnector(new ReactorClientHttpConnector(httpClient))
+                .exchangeStrategies(exchangeStrategies)
+                .filter(oauth2FilterFunction)
+                .build();
     }
 
     @Bean
     public WebClient simpleWebClient() {
         HttpClient httpClient = HttpClient.create()
-                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, CONNECT_TIMEOUT_MS)  // 10 seconds to establish connection
-                .responseTimeout(Duration.ofSeconds(RESPONSE_TIMEOUT_SECONDS))  // 30 seconds for response
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, CONNECT_TIMEOUT_MS)
+                .responseTimeout(Duration.ofSeconds(RESPONSE_TIMEOUT_SECONDS))
                 .doOnConnected(conn ->
                         conn.addHandlerLast(new ReadTimeoutHandler(READ_TIMEOUT_SECONDS, TimeUnit.SECONDS))
                                 .addHandlerLast(new WriteTimeoutHandler(WRITE_TIMEOUT_SECONDS, TimeUnit.SECONDS)));
@@ -64,30 +90,6 @@ public class WebClientConfig {
         return WebClient.builder()
                 .clientConnector(new ReactorClientHttpConnector(httpClient))
                 .exchangeStrategies(exchangeStrategies)
-                .build();
-    }
-
-    @Bean
-    WebClient oauth2WebClient(OAuth2AuthorizedClientManager authorizedClientManager) {
-        HttpClient httpClient = HttpClient.create()
-                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, CONNECT_TIMEOUT_MS)  // 10 seconds to establish connection
-                .responseTimeout(Duration.ofSeconds(RESPONSE_TIMEOUT_SECONDS))  // 30 seconds for response
-                .doOnConnected(conn ->
-                        conn.addHandlerLast(new ReadTimeoutHandler(READ_TIMEOUT_SECONDS, TimeUnit.SECONDS))
-                                .addHandlerLast(new WriteTimeoutHandler(WRITE_TIMEOUT_SECONDS, TimeUnit.SECONDS)));
-
-        ExchangeStrategies exchangeStrategies = ExchangeStrategies.builder()
-                .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(MAX_IN_MEMORY_SIZE))
-                .build();
-
-        ServletOAuth2AuthorizedClientExchangeFilterFunction oauth2 =
-                new ServletOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager);
-        oauth2.setDefaultOAuth2AuthorizedClient(true);
-
-        return WebClient.builder()
-                .clientConnector(new ReactorClientHttpConnector(httpClient))
-                .exchangeStrategies(exchangeStrategies)
-                .apply(oauth2.oauth2Configuration())
                 .build();
     }
 }
