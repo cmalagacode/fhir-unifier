@@ -10,31 +10,31 @@
 2. Elevance Health (Anthem)*
     1. Base URL (Subsidiaries) →
         1. Amerigroup
-            1. https://totalview.healthos.elevancehealth.com/resources/registered/Amerigroup/api/v1/fhir
+            1. https://totalview.healthos.elevancehealth.com/resources/unregistered/api/v1/fhir/cms_mandate/mcd
         2. Anthem Blue Cross
-            1. https://totalview.healthos.elevancehealth.com/resources/registered/AnthemBlueCross/api/v1/fhir
+            1. https://totalview.healthos.elevancehealth.com/resources/unregistered/api/v1/fhir/cms_mandate/mcd
         3. Anthem Blue Cross Blue Shield
-            1. https://totalview.healthos.elevancehealth.com/resources/registered/AnthemBlueCrossBlueShield/api/v1/fhir
+            1. https://totalview.healthos.elevancehealth.com/resources/unregistered/api/v1/fhir/cms_mandate/mcd
         4. Blue Medicare Advantage
-            1. https://totalview.healthos.elevancehealth.com/resources/registered/BlueMedicareAdvantage/api/v1/fhir
+            1. https://totalview.healthos.elevancehealth.com/resources/unregistered/api/v1/fhir/cms_mandate/mcd
         5. Clear Health Alliance
-            1. https://totalview.healthos.elevancehealth.com/resources/registered/ClearHealthAlliance/api/v1/fhir
+            1. https://totalview.healthos.elevancehealth.com/resources/unregistered/api/v1/fhir/cms_mandate/mcd
         6. Dell Children Health Plan
-            1. https://totalview.healthos.elevancehealth.com/resources/registered/DellChildrenHealthPlan/api/v1/fhir
+            1. https://totalview.healthos.elevancehealth.com/resources/unregistered/api/v1/fhir/cms_mandate/mcd
         7. Health Blue
-            1. https://totalview.healthos.elevancehealth.com/resources/registered/HealthyBlue/api/v1/fhir
+            1. https://totalview.healthos.elevancehealth.com/resources/unregistered/api/v1/fhir/cms_mandate/mcd
         8. Healthy Blue Blue Choice
-            1. https://totalview.healthos.elevancehealth.com/resources/registered/HealthyBlueBlueChoice/api/v1/fhir
+            1. https://totalview.healthos.elevancehealth.com/resources/unregistered/api/v1/fhir/cms_mandate/mcd
         9. Healthy Blue NC
-            1. https://totalview.healthos.elevancehealth.com/resources/registered/HealthyBlueNC/api/v1/fhir
+            1. https://totalview.healthos.elevancehealth.com/resources/unregistered/api/v1/fhir/cms_mandate/mcd
         10. Simply HealthCare
-            1. https://totalview.healthos.elevancehealth.com/resources/registered/SimplyHealthCare/api/v1/fhir
+            1. https://totalview.healthos.elevancehealth.com/resources/unregistered/api/v1/fhir/cms_mandate/mcd
         11. Summit
-            1. https://totalview.healthos.elevancehealth.com/resources/registered/Summit/api/v1/fhir
+            1. https://totalview.healthos.elevancehealth.com/resources/unregistered/api/v1/fhir/cms_mandate/mcd
         12. Unicare
-            1. https://totalview.healthos.elevancehealth.com/resources/registered/Unicare/api/v1/fhir
+            1. https://totalview.healthos.elevancehealth.com/resources/unregistered/api/v1/fhir/cms_mandate/mcd
         13. Wellpoint
-            1. https://totalview.healthos.elevancehealth.com/resources/registered/Wellpoint/api/v1/fhir
+            1. https://totalview.healthos.elevancehealth.com/resources/unregistered/api/v1/fhir/cms_mandate/mcd
     2. https://www.anthem.com/content/dam/digital/developers-portal/Anthem-IOProviderDirectoryAndFormulary-API-Documentation.pdf
     3. https://www.anthem.com/developers
         1. “To establish connections, third party applications (TPA) need to complete the Registration process. This involves filling out the Provider Directory API Production Environment request form, available on the Developer Portal. Once the registration is successfully completed, TPA will receive the client credentials and the access token URL through a secure email.”
@@ -67,14 +67,10 @@ Publicly available API used to query for practitioner data. This API belongs to 
 - https://npiregistry.cms.hhs.gov/demo-api
     - This project uses **version 2.1** of the API
 
-## Data Input
-
-Input data from the client.
-
-Parameters:
-- npi
-- primary_taxonomy
-
-Required Parameters:
-- npi
-- primary_taxonomy
+## Add Company
+1. If necessary, registers the app with the company.
+2. Update "HealthPlanOrganizationName.java" and add the target to the enum.
+3. Update "application.yaml" and add the target configuration. (If oauth2 make sure to add the GitHub secret variable names under security)
+4. Add the target config class to the config package. Reference configurations like "CignaConfig.java".
+5. Update "PractitionerService.java" and add if statement to handle the new target with proper configuration.
+6. Deploy via GitHub Actions workflow .github/workflows/deploy.yml. (Make sure to push tag, add deploy hook secret to the repository and make sure the workflow has correct permissions)
