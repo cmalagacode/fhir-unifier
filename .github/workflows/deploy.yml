@@ -17,6 +17,9 @@ jobs:
   unit-test:
     needs: build-image-test
     runs-on: ubuntu-latest
+    env:
+      ELEVANCE_HEALTH_CLIENT_ID: ${{ secrets.ELEVANCE_HEALTH_CLIENT_ID }}
+      ELEVANCE_HEALTH_CLIENT_SECRET: ${{ secrets.ELEVANCE_HEALTH_CLIENT_SECRET }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v5
