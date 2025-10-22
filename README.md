@@ -44,3 +44,18 @@ Think of this like a data unification layer that makes it easier to view the dat
 - Swagger API Documentation
   - swagger-ui/index.html
 
+## 📚 Add Company:
+1. If necessary, registers the app with the company.
+2. Update "HealthPlanOrganizationName.java" and add the target to the enum.
+3. Update "application.yaml" and add the target configuration. (If oauth2 make sure to add the GitHub secret variable names under security)
+4. Add the target config class to the config package. Reference configurations like "CignaConfig.java".
+5. Update "PractitionerService.java" and add if statement to handle the new target with proper configuration.
+6. Deploy via GitHub Actions workflow .github/workflows/deploy.yml. (Make sure to push tag v*, add deploy hook secret to the repository and make sure the workflow has correct permissions)
+
+## 📚 Required GitHub Secrets:
+- GITHUB_TOKEN (For deploying, GitHub automatically creates this secret)
+- DEPLOY_HOOK (For deploying to PaaS -> Heroku, Render, etc)
+- ELEVANCE_HEALTH_CLIENT_ID (For Elevance Health / Anthem)
+- ELEVANCE_HEALTH_CLIENT_SECRET (For Elevance Health / Anthem)
+- **Any other target that requires secrets because of OAuth2 like Elevance Health / Anthem**
+

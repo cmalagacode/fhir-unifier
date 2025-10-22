@@ -67,10 +67,3 @@ Publicly available API used to query for practitioner data. This API belongs to 
 - https://npiregistry.cms.hhs.gov/demo-api
     - This project uses **version 2.1** of the API
 
-## Add Company
-1. If necessary, registers the app with the company.
-2. Update "HealthPlanOrganizationName.java" and add the target to the enum.
-3. Update "application.yaml" and add the target configuration. (If oauth2 make sure to add the GitHub secret variable names under security)
-4. Add the target config class to the config package. Reference configurations like "CignaConfig.java".
-5. Update "PractitionerService.java" and add if statement to handle the new target with proper configuration.
-6. Deploy via GitHub Actions workflow .github/workflows/deploy.yml. (Make sure to push tag, add deploy hook secret to the repository and make sure the workflow has correct permissions)
