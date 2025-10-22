@@ -60,9 +60,6 @@ server:
     whitelabel:
       enabled: false
 spring:
-  mvc:
-    async:
-      request-timeout: 300000
   security:
     oauth2:
       client:
